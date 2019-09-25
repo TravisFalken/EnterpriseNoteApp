@@ -2,10 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -42,9 +46,11 @@ func main() {
 
 	fmt.Println(note)
 	setupDB()
-	addNote()
-	addNote()
-	addUser()
+
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/createUser", addUser).Methods("POST")
+	router.HandleFunc("/createNote", addNote).Methods("POST")
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 //Set up database
@@ -128,16 +134,15 @@ func userNameExists(username string) bool {
 }
 
 //====================ADD USER=====================================
-func addUser() {
+func addUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Entered addUser()") // For testing
 
 	var newUser User
-	newUser.UserName = "Trav3"
-	newUser.Email = "Travis.Falkenberg141@gmail.com"
-	newUser.FamilyName = "Falkenberg"
-	newUser.GivenName = "Travis"
-	newUser.Password = "1234"
+	//Get user information out of body of HTTP
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(reqBody, &newUser)
 
+	//Create connection to server
 	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
@@ -156,16 +161,20 @@ func addUser() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Added user")
+		fmt.Fprintf(w, "Added user")
 	} else {
-		fmt.Println("Username already exists")
+		fmt.Fprintf(w, "Username already exists")
 	}
 
 }
 
 //==========================ADD NOTE=============================================================
-func addNote() {
+func addNote(w http.ResponseWriter, r *http.Request) {
 	//Make sure user is still logged in
+	var newNote Note
+	//Get the body and put it into a a note struct
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(reqBody, &reqBody)
 	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
