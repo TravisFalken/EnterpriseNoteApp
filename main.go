@@ -14,11 +14,11 @@ import (
 )
 
 type Note struct {
-	NoteID      int       `json: "noteID"`
-	NoteTitle   string    `json:"noteTitle"`
-	NoteBody    string    `json: "noteBody"`
-	CreatedDate time.Time `json: "createdDate"`
-	NoteOwner   string    `json:"noteOwner"`
+	NoteID      int    `json: "noteID"`
+	NoteTitle   string `json:"noteTitle"`
+	NoteBody    string `json: "noteBody"`
+	CreatedDate string `json: "createdDate"`
+	NoteOwner   string `json:"noteOwner"`
 }
 
 type User struct {
@@ -34,15 +34,13 @@ var note Note //For testing dummy data
 var user User //For testing dummy data
 
 func main() {
+
+	//Ask john if I should make db global so I do not have to connect to it everytime I query
 	user.UserName = "TravisFalken"
 	user.Email = "travis.falkenberg141@gmail.com"
 	user.FamilyName = "Falkenberg"
 	user.GivenName = "Travis"
 	user.Password = "1234"
-	note.NoteID = 1
-	note.NoteTitle = "test"
-	note.NoteBody = "This is a test for the note body"
-	note.CreatedDate = time.Now()
 
 	fmt.Println(note)
 	setupDB()
@@ -50,6 +48,7 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/createUser", addUser).Methods("POST")
 	router.HandleFunc("/createNote", addNote).Methods("POST")
+	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
@@ -89,7 +88,7 @@ func setupDB() {
 				noteID serial PRIMARY KEY,
 				noteTitle character varying(50) NOT NULL,
 				noteBody TEXT NOT NULL,
-				createdDate character varying(50) NOT NULL,
+				createdDate character varying(250) NOT NULL,
 				noteOwner character varying(50) NOT NULL,
 				FOREIGN KEY(noteOwner) REFERENCES Client(userName)
 			);`
@@ -172,9 +171,15 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 func addNote(w http.ResponseWriter, r *http.Request) {
 	//Make sure user is still logged in
 	var newNote Note
+	var noteTime = time.Now()
 	//Get the body and put it into a a note struct
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &reqBody)
+	json.Unmarshal(reqBody, &newNote)
+
+	//set the created date of the note
+	newNote.CreatedDate = noteTime.String()
+	newNote.NoteOwner = user.UserName
+
 	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
@@ -188,10 +193,42 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	_, err = stmt.Exec(note.NoteTitle, note.NoteBody, note.CreatedDate, user.UserName)
+	_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, user.UserName)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Fprintf(w, "New Note Added")
+}
+
+/*===============================LIST ALL NOTES BELONGING TO USER==================================*/
+
+func listNotes(w http.ResponseWriter, r *http.Request) {
+	//Check if user is still online
+
+	var notes []Note
+	//Connect to DB
+	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+	stmt, err := db.Prepare("SELECT * FROM note WHERE noteowner=$1")
+	var note Note
+	rows, err := stmt.Query(user.UserName)
+	for rows.Next() {
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+		if err != nil {
+			log.Fatal(err)
+		}
+		notes = append(notes, note)
+
+	}
+	fmt.Println(notes)
+	//just sending it straight to frontend for testing
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(notes)
 }
 
 //insertion sort
