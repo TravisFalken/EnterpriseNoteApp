@@ -231,6 +231,33 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(notes)
 }
 
+//============================================LIST ALL REGISTERED USERS=====================
+//This function creates a list of all registerd users
+func listAllUses(loggedInUser string) []string {
+	var users []string
+	var username string
+	//Connect to DB
+	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Send query to the db
+	rows, err := db.Query("SELECT username FROM client")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&username)
+		//Make sure we dont add logged in user to recommended
+		if loggedInUser != username {
+			users = append(users, username)
+		}
+	}
+
+	return users
+}
+
 //insertion sort
 /*
 func insertionSort(arr []Student) []Student {
