@@ -49,6 +49,7 @@ func main() {
 	router.HandleFunc("/createUser", addUser).Methods("POST")
 	router.HandleFunc("/createNote", addNote).Methods("POST")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
+	router.HandleFunc("/login", login).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
@@ -105,6 +106,24 @@ func setupDB() {
 
 }
 
+//=========================Checks if user login details are correct=========================================
+func login(w http.ResponseWriter, r *http.Request) {
+	var loginUser User
+	req, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(req, &loginUser)
+	if userNameExists(loginUser.UserName) {
+
+		if validatePass(loginUser.Password) {
+			fmt.Fprintf(w, "Successfully logged in")
+		} else {
+			fmt.Fprintf(w, "Login not successfull")
+		}
+	} else {
+		fmt.Fprintf(w, "Login not successfull")
+	}
+
+}
+
 //Validate if the username already exists in the database  (username has to be unique)
 //Return true if username exists
 func userNameExists(username string) bool {
@@ -126,10 +145,39 @@ func userNameExists(username string) bool {
 		return false
 	}
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	//Username does exist in the database
 	return true
+}
+
+//===================Validate Password=============================
+func validatePass(password string) bool {
+	var pass string
+	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	//prepare statement to check for password
+	stmt, err := db.Prepare("SELECT password FROM CLIENT WHERE password = $1")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = stmt.QueryRow(password).Scan(&pass)
+	if err == sql.ErrNoRows {
+		//password does not match
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//password matches
+	return true
+
 }
 
 //====================ADD USER=====================================
