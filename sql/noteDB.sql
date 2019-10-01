@@ -1,7 +1,7 @@
 
 
 
-CREATE TABLE _user (
+CREATE TABLE _user ( -- added the underscore so we dont have to always add quotes in code
   user_id integer PRIMARY KEY NOT NULL,
   given_name varchar(40),
   family_name varchar(40),
@@ -12,7 +12,7 @@ CREATE TABLE _user (
 
 -- ------------------------------------------------
 
-CREATE TABLE _note(
+CREATE TABLE _note( -- added underscore here to keep naming convention
     note_id integer PRIMARY KEY NOT NULL,
     user_id integer,
     title VARCHAR(40),
@@ -22,7 +22,7 @@ CREATE TABLE _note(
 
 -- ------------------------------------------------
 
-CREATE TABLE _note_privileges(
+CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
     note_privileges_id integer PRIMARY KEY NOT NULL,
     note_id integer,
     user_id integer,
