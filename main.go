@@ -74,19 +74,8 @@ func setupDB() {
 				NullReason character varying(50)
 			);`
 	*/
-	/*
-		userTableQuery := `DROP TABLE IF EXISTS Client;
-				CREATE TABLE Client(
-					userName  character varying(50) NOT NULL PRIMARY KEY,
-					password character varying(50) NOT NULL,
-					email character varying(250) NOT NULL,
-					givenName character varying(50) NOT NULL,
-					familyName character varying(50) NOT NULL,
-					sessionID character varying(250)
-				);`
-	*/
-	noteTableQuery := `DROP TABLE IF EXISTS Note;
-				CREATE TABLE Note(
+	noteTableQuery := `DROP TABLE IF EXISTS _Note;
+				CREATE TABLE _Note(
 				noteID serial PRIMARY KEY,
 				noteTitle character varying(50) NOT NULL,
 				noteBody TEXT NOT NULL,
@@ -94,6 +83,16 @@ func setupDB() {
 				noteOwner character varying(50) NOT NULL,
 				FOREIGN KEY(noteOwner) REFERENCES Client(userName)
 			);`
+	userTableQuery := `DROP TABLE IF EXISTS Client CASCADE;
+				CREATE TABLE _user(
+					userName  character varying(50) NOT NULL PRIMARY KEY,
+					password character varying(50) NOT NULL,
+					email character varying(250) NOT NULL,
+					givenName character varying(50) NOT NULL,
+					familyName character varying(50) NOT NULL,
+					sessionID character varying(250)
+				);`
+
 	/*
 		_, err = db.Exec(userTableQuery)
 		if err != nil {
@@ -105,6 +104,10 @@ func setupDB() {
 		log.Fatal(err)
 	}
 
+	_, err = db.Exec(userTableQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 //=========================Checks if user login details are correct=========================================

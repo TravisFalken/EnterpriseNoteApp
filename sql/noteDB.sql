@@ -2,10 +2,9 @@
 
 
 CREATE TABLE _user ( -- added the underscore so we dont have to always add quotes in code
-  user_id integer PRIMARY KEY NOT NULL,
   given_name varchar(40),
   family_name varchar(40),
-  user_name varchar(40),
+  userName  character varying(50) NOT NULL PRIMARY KEY,
   password varchar(40)
 );
 
