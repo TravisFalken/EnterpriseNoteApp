@@ -1,4 +1,4 @@
-package note
+package model
 
 type Note struct {
 	NoteID int    `json:"noteID"`
