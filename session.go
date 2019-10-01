@@ -12,11 +12,8 @@ import (
 //==================gets the user from database with the session id================================
 func getUser(sessionid string) (user *User, userFound bool) {
 
-	//Connect to database
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
 
 	//Prepare query for getting user with the session id
@@ -56,11 +53,8 @@ func newSessionid() string {
 //=======================Add session id to user======================================================
 func addSessionToUser(user User, sessionID string) bool {
 
-	//Connect to database
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
 
 	stmt, err := db.Prepare("UPDATE _user SET sessionid =$1 WHERE username=$2;")
@@ -80,11 +74,8 @@ func userStillLoggedIn(req *http.Request) bool {
 		return false
 	}
 
-	//Connect to database
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
 
 	//Prepare statement to stop sql injection

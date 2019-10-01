@@ -56,12 +56,10 @@ func main() {
 
 //Set up database
 func setupDB() {
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
+
 	/*
 		test := `DROP TABLE IF EXISTS Client;
 				CREATE TABLE Client(
@@ -81,9 +79,9 @@ func setupDB() {
 				noteBody TEXT NOT NULL,
 				createdDate character varying(250) NOT NULL,
 				noteOwner character varying(50) NOT NULL,
-				FOREIGN KEY(noteOwner) REFERENCES Client(userName)
+				FOREIGN KEY(noteOwner) REFERENCES _user(userName)
 			);`
-	userTableQuery := `DROP TABLE IF EXISTS Client CASCADE;
+	userTableQuery := `DROP TABLE IF EXISTS _user CASCADE;
 				CREATE TABLE _user(
 					userName  character varying(50) NOT NULL PRIMARY KEY,
 					password character varying(50) NOT NULL,
@@ -99,7 +97,7 @@ func setupDB() {
 			log.Fatal(err)
 		}
 	*/
-	_, err = db.Exec(noteTableQuery)
+	_, err := db.Exec(noteTableQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -150,10 +148,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 //Return true if username exists
 func userNameExists(username string) bool {
 	var name string
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
 
 	//Prepare query to check if the username already exists
@@ -176,10 +172,8 @@ func userNameExists(username string) bool {
 //===================Validate Password=============================
 func validatePass(password string) bool {
 	var pass string
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
 
 	//prepare statement to check for password
@@ -213,10 +207,8 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &newUser)
 
 	//Create connection to server
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
 	defer db.Close()
 
 	if !userNameExists(newUser.UserName) {
@@ -252,11 +244,8 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		newNote.CreatedDate = noteTime.String()
 		newNote.NoteOwner = user.UserName
 
-		db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-		if err != nil {
-			log.Fatal(err)
-		}
-
+		//Connect to db
+		db := connectDatabase()
 		defer db.Close()
 
 		//Prepare insert to stop SQL injections
@@ -282,30 +271,31 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 
 func listNotes(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
+	if userStillLoggedIn(r) {
+		var notes []Note
+		//Connect to db
+		db := connectDatabase()
+		defer db.Close()
+		stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1")
+		var note Note
+		rows, err := stmt.Query(user.UserName)
+		for rows.Next() {
+			err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+			if err != nil {
+				log.Fatal(err)
+			}
+			notes = append(notes, note)
 
-	var notes []Note
-	//Connect to DB
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer db.Close()
-	stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1")
-	var note Note
-	rows, err := stmt.Query(user.UserName)
-	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
-		if err != nil {
-			log.Fatal(err)
 		}
-		notes = append(notes, note)
-
+		fmt.Println(notes)
+		//just sending it straight to frontend for testing
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(notes)
+		//User is not logged in
+	} else {
+		fmt.Fprintf(w, "Not Logged in!")
 	}
-	fmt.Println(notes)
-	//just sending it straight to frontend for testing
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(notes)
+
 }
 
 //============================================LIST ALL REGISTERED USERS=====================
@@ -313,11 +303,9 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 func listAllUses(loggedInUser string) []string {
 	var users []string
 	var username string
-	//Connect to DB
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
 
 	//Send query to the db
 	rows, err := db.Query("SELECT username FROM _user")
