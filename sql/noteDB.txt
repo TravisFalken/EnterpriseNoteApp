@@ -6,7 +6,8 @@ CREATE TABLE _user ( -- added the underscore so we dont have to always add quote
   given_name varchar(40),
   family_name varchar(40),
   user_name varchar(40),
-  password varchar(40)
+  password varchar(40),
+  session_id varchar(250)
 );
 
 
