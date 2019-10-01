@@ -20,7 +20,7 @@ func getUser(sessionid string) (user *User, userFound bool) {
 	defer db.Close()
 
 	//Prepare query for getting user with the session id
-	stmt, err := db.Prepare("SELECT username,email,givenname FROM client WHERE sessionid = $1;")
+	stmt, err := db.Prepare("SELECT username,email,givenname FROM _user WHERE sessionid = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func addSessionToUser(user User, sessionID string) bool {
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE client SET sessionid =$1 WHERE username=$2;")
+	stmt, err := db.Prepare("UPDATE _user SET sessionid =$1 WHERE username=$2;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,7 +88,7 @@ func userStillLoggedIn(req *http.Request) bool {
 	defer db.Close()
 
 	//Prepare statement to stop sql injection
-	stmt, err := db.Prepare("SELECT username FROM client WHERE sessionid=$1;")
+	stmt, err := db.Prepare("SELECT username FROM _user WHERE sessionid=$1;")
 	if err != nil {
 		log.Fatal(err)
 	}

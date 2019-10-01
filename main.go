@@ -50,6 +50,7 @@ func main() {
 	router.HandleFunc("/createNote", addNote).Methods("POST")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/login", login).Methods("GET")
+	router.HandleFunc("/logout", logout).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
@@ -114,6 +115,24 @@ func login(w http.ResponseWriter, r *http.Request) {
 	if userNameExists(loginUser.UserName) {
 
 		if validatePass(loginUser.Password) {
+
+			//create new session id
+			sessionid := newSessionid()
+			//Add session id to the user in the database
+			addSessionToUser(loginUser, sessionid)
+			//set the clients session cookie
+			sessionCookie := &http.Cookie{
+				Name:  "session",
+				Value: sessionid,
+			}
+			http.SetCookie(w, sessionCookie)
+			//Create username cookie
+			usernameCookie := &http.Cookie{
+				Name:  "username",
+				Value: loginUser.UserName,
+			}
+			//Set a cookie to username
+			http.SetCookie(w, usernameCookie)
 			fmt.Fprintf(w, "Successfully logged in")
 		} else {
 			fmt.Fprintf(w, "Login not successfull")
@@ -135,7 +154,7 @@ func userNameExists(username string) bool {
 	defer db.Close()
 
 	//Prepare query to check if the username already exists
-	getUserName, err := db.Prepare("Select username FROM Client WHERE username = $1")
+	getUserName, err := db.Prepare("Select username FROM _user WHERE username = $1")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -161,12 +180,13 @@ func validatePass(password string) bool {
 	defer db.Close()
 
 	//prepare statement to check for password
-	stmt, err := db.Prepare("SELECT password FROM CLIENT WHERE password = $1")
+	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	err = stmt.QueryRow(password).Scan(&pass)
+	//if nothing is returned
 	if err == sql.ErrNoRows {
 		//password does not match
 		return false
@@ -199,7 +219,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
 		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO Client VALUES($1,$2,$3,$4,$5)")
+		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5)")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -217,36 +237,42 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 
 //==========================ADD NOTE=============================================================
 func addNote(w http.ResponseWriter, r *http.Request) {
-	//Make sure user is still logged in
-	var newNote Note
-	var noteTime = time.Now()
-	//Get the body and put it into a a note struct
-	reqBody, _ := ioutil.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &newNote)
+	//Check if user is logged in
+	if userStillLoggedIn(r) {
+		var newNote Note
+		var noteTime = time.Now()
+		//Get the body and put it into a a note struct
+		reqBody, _ := ioutil.ReadAll(r.Body)
+		json.Unmarshal(reqBody, &newNote)
 
-	//set the created date of the note
-	newNote.CreatedDate = noteTime.String()
-	newNote.NoteOwner = user.UserName
+		//set the created date of the note
+		newNote.CreatedDate = noteTime.String()
+		newNote.NoteOwner = user.UserName
 
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
+		db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer db.Close()
+
+		//Prepare insert to stop SQL injections
+		stmt, err := db.Prepare("INSERT INTO _note (notetitle, notebody, createddate, noteowner) VALUES($1,$2,$3,$4)")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, user.UserName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Fprintf(w, "New Note Added")
+		//User is not logged in
+	} else {
+		fmt.Fprintf(w, "You are not logged in!")
 	}
 
-	defer db.Close()
-
-	//Prepare insert to stop SQL injections
-	stmt, err := db.Prepare("INSERT INTO Note (notetitle, notebody, createddate, noteowner) VALUES($1,$2,$3,$4)")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, user.UserName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Fprintf(w, "New Note Added")
 }
 
 /*===============================LIST ALL NOTES BELONGING TO USER==================================*/
@@ -262,7 +288,7 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-	stmt, err := db.Prepare("SELECT * FROM note WHERE noteowner=$1")
+	stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1")
 	var note Note
 	rows, err := stmt.Query(user.UserName)
 	for rows.Next() {
@@ -291,7 +317,7 @@ func listAllUses(loggedInUser string) []string {
 	}
 
 	//Send query to the db
-	rows, err := db.Query("SELECT username FROM client")
+	rows, err := db.Query("SELECT username FROM _user")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -304,6 +330,17 @@ func listAllUses(loggedInUser string) []string {
 	}
 
 	return users
+}
+
+//=========================USER LOGOUT======================================================
+func logout(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		deleteSesion(w, r)
+		fmt.Fprintf(w, "Successfully logged out")
+	} else {
+		fmt.Fprintf(w, "Already Logged out")
+	}
+
 }
 
 //insertion sort
