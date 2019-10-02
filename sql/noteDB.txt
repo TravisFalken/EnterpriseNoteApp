@@ -39,14 +39,14 @@ CREATE TABLE _group(
     group_title VARCHAR(40),
     read CHAR(1),
     write CHAR(1),
-    group_owner integer
+    group_owner VARCHAR(40)
 );
 
 DROP TABLE IF EXISTS _group_user CASCADE;
 CREATE TABLE _group_user(
     group_user_id serial PRIMARY KEY NOT NULL,
     group_id integer,
-    user_name integer
+    user_name VARCHAR(40)
 );
 
 -- ------------------------------------------------
