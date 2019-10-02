@@ -1,6 +1,6 @@
 
 
-
+DROP TABLE IF EXISTS _user CASCADE;
 CREATE TABLE _user( -- added the underscore so we dont have to always add quotes in code
   given_name varchar(40),
   family_name varchar(40),
@@ -13,6 +13,7 @@ CREATE TABLE _user( -- added the underscore so we dont have to always add quotes
 
 -- ------------------------------------------------
 
+DROP TABLE IF EXISTS _note;
 CREATE TABLE _note( -- added underscore here to keep naming convention
     note_id integer PRIMARY KEY NOT NULL,
     user_name character varying(50),
@@ -23,6 +24,7 @@ CREATE TABLE _note( -- added underscore here to keep naming convention
 
 -- ------------------------------------------------
 
+DROP TABLE IF EXISTS _note_privileges;
 CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
     note_privileges_id integer PRIMARY KEY NOT NULL,
     note_id integer,
@@ -83,16 +85,16 @@ VALUES
 
 -- for word match search 
 
-SELECT * FROM _note
-WHERE body ~ '\yhippo\y';
+-- SELECT * FROM _note
+-- WHERE body ~ '\yhippo\y';
 
-SELECT * FROM _note
-WHERE body ~ '\ytwist\y';
+-- SELECT * FROM _note
+-- WHERE body ~ '\ytwist\y';
 
 -- partial word match search
 
-SELECT * FROM _note
-WHERE body ~ 'twi:*';
+-- SELECT * FROM _note
+-- WHERE body ~ 'twi:*';
 
-SELECT * FROM _note
-WHERE body ~ 'ppo:*';
+-- SELECT * FROM _note
+-- WHERE body ~ 'ppo:*';
