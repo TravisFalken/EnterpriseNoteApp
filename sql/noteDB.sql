@@ -86,3 +86,11 @@ WHERE body ~ '\yhippo\y';
 
 SELECT * FROM _note
 WHERE body ~ '\ytwist\y';
+
+-- partial word match search
+
+SELECT * FROM _note
+WHERE body ~ 'twi:*';
+
+SELECT * FROM _note
+WHERE body ~ 'ppo:*';
