@@ -75,6 +75,14 @@ func setupDB() {
 			);`
 	*/
 
+	_note_privilegesQuery := `CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
+				note_privileges_id integer PRIMARY KEY NOT NULL,
+				note_id integer,
+				user_name character varying(50),
+				read CHAR(1), -- t for true  f for false
+				write CHAR(1) -- t for true  f for false
+			);`
+
 	userTableQuery := `DROP TABLE IF EXISTS _user CASCADE;
 				CREATE TABLE _user(
 					user_name  character varying(50) NOT NULL PRIMARY KEY,
@@ -109,6 +117,8 @@ func setupDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = db.Exec(_note_privilegesQuery)
 }
 
 //=========================Checks if user login details are correct=========================================
@@ -368,11 +378,7 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
 	if userStillLoggedIn(r) {
 		var notes []Note
-		usernameCookie, err := r.Cookie("username")
-		if err != nil {
-			log.Fatal(err)
-		}
-		username := usernameCookie.Value
+		username := getUserName(r)
 		//Connect to db
 		db := connectDatabase()
 		defer db.Close()
