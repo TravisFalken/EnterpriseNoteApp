@@ -85,6 +85,11 @@ VALUES
 ('Vaughn1', 'note i worte', 'Vaughn note with the word twist', date('now')),
 ('Trav3', 'NoteBookApp To do List', 'This is a list of things we need to do for the webapp', date('now'));
 
+
+INSERT INTO _note_privileges(note_id, user_name, read, write)
+VALUES
+(1, 'Trav3', 't', 't');
+
 -- for word match search 
 
 -- SELECT * FROM _note
