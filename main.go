@@ -74,24 +74,25 @@ func setupDB() {
 				NullReason character varying(50)
 			);`
 	*/
-	noteTableQuery := `DROP TABLE IF EXISTS _Note;
-				CREATE TABLE _Note(
-				noteID serial PRIMARY KEY,
-				noteTitle character varying(50) NOT NULL,
-				noteBody TEXT NOT NULL,
-				createdDate character varying(250) NOT NULL,
-				noteOwner character varying(50) NOT NULL,
-				FOREIGN KEY(noteOwner) REFERENCES _user(userName)
-			);`
+
 	userTableQuery := `DROP TABLE IF EXISTS _user CASCADE;
 				CREATE TABLE _user(
-					userName  character varying(50) NOT NULL PRIMARY KEY,
+					user_name  character varying(50) NOT NULL PRIMARY KEY,
 					password character varying(50) NOT NULL,
 					email character varying(250) NOT NULL,
-					givenName character varying(50) NOT NULL,
-					familyName character varying(50) NOT NULL,
-					sessionID character varying(250)
+					given_name character varying(50) NOT NULL,
+					family_name character varying(50) NOT NULL,
+					session_id character varying(250)
 				);`
+	noteTableQuery := `DROP TABLE IF EXISTS _Note;
+				CREATE TABLE _Note(
+				note_id serial PRIMARY KEY,
+				title character varying(50) NOT NULL,
+				body TEXT NOT NULL,
+				date_created character varying(250) NOT NULL,
+				note_owner character varying(50) NOT NULL,
+				FOREIGN KEY(note_owner) REFERENCES _user(user_name)
+			);`
 
 	/*
 		_, err = db.Exec(userTableQuery)
@@ -99,12 +100,12 @@ func setupDB() {
 			log.Fatal(err)
 		}
 	*/
-	_, err := db.Exec(noteTableQuery)
+	_, err := db.Exec(userTableQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = db.Exec(userTableQuery)
+	_, err = db.Exec(noteTableQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -155,7 +156,7 @@ func userNameExists(username string) bool {
 	defer db.Close()
 
 	//Prepare query to check if the username already exists
-	getUserName, err := db.Prepare("Select username FROM _user WHERE username = $1")
+	getUserName, err := db.Prepare("Select user_name FROM _user WHERE user_name = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -179,7 +180,7 @@ func validatePass(password string) bool {
 	defer db.Close()
 
 	//prepare statement to check for password
-	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1")
+	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -216,7 +217,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
 		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5)")
+		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5);")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -257,7 +258,7 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		defer db.Close()
 
 		//Prepare insert to stop SQL injections
-		stmt, err := db.Prepare("INSERT INTO _note (notetitle, notebody, createddate, noteowner) VALUES($1,$2,$3,$4);")
+		stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4);")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -289,7 +290,7 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 		//Connect to db
 		db := connectDatabase()
 		defer db.Close()
-		stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1")
+		stmt, err := db.Prepare("SELECT * FROM _note WHERE note_owner=$1;")
 		var note Note
 		rows, err := stmt.Query(username)
 		for rows.Next() {
@@ -321,7 +322,7 @@ func listAllUses(loggedInUser string) []string {
 	defer db.Close()
 
 	//Send query to the db
-	rows, err := db.Query("SELECT username FROM _user")
+	rows, err := db.Query("SELECT user_name FROM _user;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -376,7 +377,7 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 		db := connectDatabase()
 		defer db.Close()
 		bodyText := mux.Vars(r)["id"]
-		stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1 AND body ~ '$2:*';")
+		stmt, err := db.Prepare("SELECT * FROM _note WHERE note_owner=$1 AND body ~ '$2:*';")
 		var note Note
 		rows, err := stmt.Query(username, bodyText)
 		for rows.Next() {

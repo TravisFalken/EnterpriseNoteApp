@@ -17,7 +17,7 @@ func getUser(sessionid string) (user *User, userFound bool) {
 	defer db.Close()
 
 	//Prepare query for getting user with the session id
-	stmt, err := db.Prepare("SELECT username,email,givenname FROM _user WHERE sessionid = $1;")
+	stmt, err := db.Prepare("SELECT user_name,email,given_name FROM _user WHERE session_id = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func addSessionToUser(user User, sessionID string) bool {
 	db := connectDatabase()
 	defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE _user SET sessionid =$1 WHERE username=$2;")
+	stmt, err := db.Prepare("UPDATE _user SET session_id=$1 WHERE user_name=$2;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func userStillLoggedIn(req *http.Request) bool {
 	defer db.Close()
 
 	//Prepare statement to stop sql injection
-	stmt, err := db.Prepare("SELECT username FROM _user WHERE sessionid=$1;")
+	stmt, err := db.Prepare("SELECT user_name FROM _user WHERE session_id=$1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,4 +107,35 @@ func deleteSesion(w http.ResponseWriter, r *http.Request) bool {
 	}
 	http.SetCookie(w, sessionid)
 	return true
+}
+
+//Get username based on session id
+func getUserName(req *http.Request) (username string) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	sessionIDCookie, err := req.Cookie("session")
+	if err != nil {
+		log.Fatal(err)
+	}
+	sessionID := sessionIDCookie.Value
+
+	//Prepare Query
+	stmt, err := db.Prepare("SELECT user_name FROM _user WHERE session_id=$1;")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Query DB
+	rows, err := stmt.Query(sessionID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&username)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return username
 }
