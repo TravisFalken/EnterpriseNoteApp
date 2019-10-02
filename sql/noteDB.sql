@@ -78,3 +78,11 @@ VALUES
 (100, 'Vaughn1', 'note test', 'A note i created to test notes, this is nothing interesting', date('now')),
 (101, 'Curran85', 'currans note', 'curran wrothe this note, he has added weird words like twist or hippo', date('now')),
 (102, 'Grand_Kenyon', 'note i worte', 'kenyons note with the word twist', date('now'));
+
+-- for word match search 
+
+SELECT * FROM _note
+WHERE body ~ '\yhippo\y';
+
+SELECT * FROM _note
+WHERE body ~ '\ytwist\y';
