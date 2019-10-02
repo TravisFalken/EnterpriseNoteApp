@@ -1,11 +1,13 @@
 
 
 
-CREATE TABLE _user ( -- added the underscore so we dont have to always add quotes in code
+CREATE TABLE _user( -- added the underscore so we dont have to always add quotes in code
   given_name varchar(40),
   family_name varchar(40),
   user_name  character varying(50) NOT NULL PRIMARY KEY,
-  password varchar(40)
+  password varchar(40),
+  email varchar(40),
+  session_id varchar(100)
 );
 
 
