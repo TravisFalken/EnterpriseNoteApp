@@ -13,10 +13,10 @@ CREATE TABLE _user( -- added the underscore so we dont have to always add quotes
 
 -- ------------------------------------------------
 
-DROP TABLE IF EXISTS _note;
+DROP TABLE IF EXISTS _note CASCADE;
 CREATE TABLE _note( -- added underscore here to keep naming convention
-    note_id integer PRIMARY KEY NOT NULL,
-    user_name character varying(50),
+    note_id serial PRIMARY KEY NOT NULL,
+    note_owner character varying(50),
     title VARCHAR(40),
     body VARCHAR(250),
     date_created DATE
@@ -26,7 +26,7 @@ CREATE TABLE _note( -- added underscore here to keep naming convention
 
 DROP TABLE IF EXISTS _note_privileges;
 CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
-    note_privileges_id integer PRIMARY KEY NOT NULL,
+    note_privileges_id serial PRIMARY KEY NOT NULL,
     note_id integer,
     user_name character varying(50),
     read CHAR(1), -- t for true  f for false
@@ -36,7 +36,7 @@ CREATE TABLE _note_privileges( -- added underscore here to keep naming conventio
 -- ------------------------------------------------
 
 ALTER TABLE _note ADD  
-    CONSTRAINT user_name FOREIGN KEY (user_name)
+    CONSTRAINT note_owner FOREIGN KEY (note_owner)
         REFERENCES _user (user_name);
 
 -- ------------------------------------------------
@@ -54,6 +54,7 @@ ALTER TABLE "_note_privileges" ADD
 
 INSERT INTO "_user" (given_name,family_name,user_name,password) 
 VALUES 
+('Travis', 'Falkenberg', 'Trav3', '1234'),
 ('Mohammad','Vaughn','Vaughn1','password'),
 ('Curran','Cochran','Curran85','password'),
 ('Yoshio','Bernard','BernardsProfile','password'),
@@ -77,11 +78,12 @@ VALUES
 
 
 
-INSERT INTO _note (note_id, user_name, title, body, date_created)
+INSERT INTO _note (note_owner, title, body, date_created)
 VALUES
-(100, 'Vaughn1', 'note test', 'A note i created to test notes, this is nothing interesting', date('now')),
-(101, 'Curran85', 'currans note', 'curran wrothe this note, he has added weird words like twist or hippo', date('now')),
-(102, 'Grand_Kenyon', 'note i worte', 'kenyons note with the word twist', date('now'));
+('Vaughn1', 'note test', 'A note i created to test notes, this is nothing interesting', date('now')),
+('Vaughn1', 'Vaughn note', 'Vaughn wrote this note, he has added weird words like twist or hippo', date('now')),
+('Vaughn1', 'note i worte', 'Vaughn note with the word twist', date('now')),
+('Trav3', 'NoteBookApp To do List', 'This is a list of things we need to do for the webapp', date('now'));
 
 -- for word match search 
 
