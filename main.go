@@ -51,6 +51,7 @@ func main() {
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/login", login).Methods("GET")
 	router.HandleFunc("/logout", logout).Methods("GET")
+	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
@@ -236,25 +237,31 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		var newNote Note
 		var noteTime = time.Now()
+		usernameCookie, err := r.Cookie("username")
+		if err != nil {
+			log.Fatal(err)
+		}
+		username := usernameCookie.Value
+
 		//Get the body and put it into a a note struct
 		reqBody, _ := ioutil.ReadAll(r.Body)
 		json.Unmarshal(reqBody, &newNote)
 
 		//set the created date of the note
 		newNote.CreatedDate = noteTime.String()
-		newNote.NoteOwner = user.UserName
+		newNote.NoteOwner = username
 
 		//Connect to db
 		db := connectDatabase()
 		defer db.Close()
 
 		//Prepare insert to stop SQL injections
-		stmt, err := db.Prepare("INSERT INTO _note (notetitle, notebody, createddate, noteowner) VALUES($1,$2,$3,$4)")
+		stmt, err := db.Prepare("INSERT INTO _note (notetitle, notebody, createddate, noteowner) VALUES($1,$2,$3,$4);")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, user.UserName)
+		_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -273,12 +280,17 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
 	if userStillLoggedIn(r) {
 		var notes []Note
+		usernameCookie, err := r.Cookie("username")
+		if err != nil {
+			log.Fatal(err)
+		}
+		username := usernameCookie.Value
 		//Connect to db
 		db := connectDatabase()
 		defer db.Close()
 		stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1")
 		var note Note
-		rows, err := stmt.Query(user.UserName)
+		rows, err := stmt.Query(username)
 		for rows.Next() {
 			err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 			if err != nil {
@@ -332,6 +344,21 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Already Logged out")
 	}
 
+}
+
+//==============DELETE A NOTE==============================
+func deleteNote(w http.ResponseWriter, r *http.Request) {
+	//Check if user is still logged in
+	if userStillLoggedIn(r) {
+		//deletes a note and returns true if deleted
+		if deleteSpecificNote(r) {
+			fmt.Fprintf(w, "Successfully Deleted")
+		} else {
+			fmt.Fprintf(w, "Not Successful")
+		}
+	} else {
+		fmt.Fprintf(w, "You cannot delete note because you are not logged in")
+	}
 }
 
 //insertion sort
