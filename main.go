@@ -378,7 +378,7 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 		defer db.Close()
 		bodyText := mux.Vars(r)["id"]
 		bodyText += ":*" //for testing
-		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1 AND body ~ $2;")
+		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
 		if err != nil {
 			log.Fatal(err)
 		}
