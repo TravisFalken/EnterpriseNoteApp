@@ -50,17 +50,17 @@ ALTER TABLE "_note_privileges" ADD
 
 INSERT INTO "_user" (given_name,family_name,user_name,password) 
 VALUES 
-('Mohammad','Vaughn','Alec_Floyd','password'),
-('Curran','Cochran','Rose_Daugherty','password'),
-('Yoshio','Bernard','Raphael_Sexton','password'),
-('Hiram','Matthews','Kareem_Mosley','password'),
-('Kenyon','Wall','Graham_Mejia','password'),
-('Carson','Gillespie','Kelsey_Hutchinson','password'),
-('Hayes','Vinson','Todd_Fox','password'),
-('Jermaine','Alvarado','Serina_Rios','password'),
-('Andrew','House','Ralph_Blanchard','password'),
-('Rooney','Fowler','Allistair_Wiggins','password'),
-('Abbot','Greene','Porter_Long','password'),
+('Mohammad','Vaughn','Vaughn1','password'),
+('Curran','Cochran','Curran85','password'),
+('Yoshio','Bernard','BernardsProfile','password'),
+('Hiram','Matthews','Matthews_Hiram','password'),
+('Kenyon','Wall','Grand_Kenyon','password'),
+('Carson','Gillespie','Carson123','password'),
+('Hayes','Vinson','Hayes45','password'),
+('Jermaine','Alvarado','Jermaine321','password'),
+('Andrew','House','Andrew222','password'),
+('Rooney','Fowler','Wayne_Rooney','password'),
+('Abbot','Greene','Abbot_Time','password'),
 ('Brandon','Terrell','Daniel_Massey','password'),
 ('Donovan','Morris','Forrest_Stafford','password'),
 ('Isaac','Gomez','Griffith_Dean','password'),
@@ -73,3 +73,8 @@ VALUES
 
 
 
+INSERT INTO _note (note_id, user_name, title, body, date_created)
+VALUES
+(100, 'Vaughn1', 'note test', 'A note i created to test notes, this is nothing interesting', date('now')),
+(101, 'Curran85', 'currans note', 'curran wrothe this note, he has added weird words like twist or hippo', date('now')),
+(102, 'Grand_Kenyon', 'note i worte', 'kenyons note with the word twist', date('now'));
