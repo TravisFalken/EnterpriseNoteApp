@@ -304,7 +304,7 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 		var note Note
 		rows, err := stmt.Query(username)
 		for rows.Next() {
-			err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+			err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
 			if err != nil {
 				log.Fatal(err)
 			}
