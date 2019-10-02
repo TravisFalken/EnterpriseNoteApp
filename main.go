@@ -290,7 +290,10 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 		//Connect to db
 		db := connectDatabase()
 		defer db.Close()
-		stmt, err := db.Prepare("SELECT * FROM _note WHERE note_owner=$1;")
+		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created  
+									FROM _note 
+									LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id)
+									WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
 		var note Note
 		rows, err := stmt.Query(username)
 		for rows.Next() {
