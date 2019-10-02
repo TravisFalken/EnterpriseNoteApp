@@ -4,7 +4,7 @@
 CREATE TABLE _user ( -- added the underscore so we dont have to always add quotes in code
   given_name varchar(40),
   family_name varchar(40),
-  userName  character varying(50) NOT NULL PRIMARY KEY,
+  user_name  character varying(50) NOT NULL PRIMARY KEY,
   password varchar(40)
 );
 
@@ -13,7 +13,7 @@ CREATE TABLE _user ( -- added the underscore so we dont have to always add quote
 
 CREATE TABLE _note( -- added underscore here to keep naming convention
     note_id integer PRIMARY KEY NOT NULL,
-    user_id integer,
+    user_name character varying(50),
     title VARCHAR(40),
     body VARCHAR(250),
     date_created DATE
@@ -24,7 +24,7 @@ CREATE TABLE _note( -- added underscore here to keep naming convention
 CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
     note_privileges_id integer PRIMARY KEY NOT NULL,
     note_id integer,
-    user_id integer,
+    user_name character varying(50),
     read CHAR(1),
     write CHAR(1)
 );
@@ -32,14 +32,14 @@ CREATE TABLE _note_privileges( -- added underscore here to keep naming conventio
 -- ------------------------------------------------
 
 ALTER TABLE _note ADD  
-    CONSTRAINT user_id FOREIGN KEY (user_id)
-        REFERENCES _user (user_id);
+    CONSTRAINT user_name FOREIGN KEY (user_name)
+        REFERENCES _user (user_name);
 
 -- ------------------------------------------------
 
 ALTER TABLE "_note_privileges" ADD  
-    CONSTRAINT user_id FOREIGN KEY (user_id)
-        REFERENCES _user (user_id);
+    CONSTRAINT user_name FOREIGN KEY (user_name)
+        REFERENCES _user (user_name);
 
 ALTER TABLE "_note_privileges" ADD  
     CONSTRAINT note_id FOREIGN KEY (note_id)
