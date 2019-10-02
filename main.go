@@ -43,7 +43,7 @@ func main() {
 	user.Password = "1234"
 
 	fmt.Println(note)
-	setupDB()
+	//setupDB()
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/createUser", addUser).Methods("POST")
