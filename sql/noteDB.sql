@@ -25,8 +25,8 @@ CREATE TABLE _note_privileges( -- added underscore here to keep naming conventio
     note_privileges_id integer PRIMARY KEY NOT NULL,
     note_id integer,
     user_name character varying(50),
-    read CHAR(1),
-    write CHAR(1)
+    read CHAR(1), -- t for true  f for false
+    write CHAR(1) -- t for true  f for false
 );
 
 -- ------------------------------------------------
