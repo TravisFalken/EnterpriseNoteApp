@@ -377,9 +377,16 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 		db := connectDatabase()
 		defer db.Close()
 		bodyText := mux.Vars(r)["id"]
-		stmt, err := db.Prepare("SELECT * FROM _note WHERE note_owner=$1 AND body ~ '$2:*';")
+		bodyText += ":*" //for testing
+		stmt, err := db.Prepare("SELECT * FROM _note WHERE note_owner=$1 AND body ~ $2;")
+		if err != nil {
+			log.Fatal(err)
+		}
 		var note Note
 		rows, err := stmt.Query(username, bodyText)
+		if err != nil {
+			log.Fatal(err)
+		}
 		for rows.Next() {
 			err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 			if err != nil {
