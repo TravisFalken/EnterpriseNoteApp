@@ -24,13 +24,29 @@ CREATE TABLE _note( -- added underscore here to keep naming convention
 
 -- ------------------------------------------------
 
-DROP TABLE IF EXISTS _note_privileges;
+DROP TABLE IF EXISTS _note_privileges CASCADE;
 CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
     note_privileges_id serial PRIMARY KEY NOT NULL,
     note_id integer,
     user_name character varying(50),
     read CHAR(1), -- t for true  f for false
     write CHAR(1) -- t for true  f for false
+);
+
+DROP TABLE IF EXISTS _group CASCADE;
+CREATE TABLE _group(
+    group_id serial PRIMARY KEY NOT NULL,
+    group_title VARCHAR(40),
+    read CHAR(1),
+    write CHAR(1),
+    group_owner integer
+);
+
+DROP TABLE IF EXISTS _group_user CASCADE;
+CREATE TABLE _group_user(
+    group_user_id serial PRIMARY KEY NOT NULL,
+    group_id integer,
+    user_name integer
 );
 
 -- ------------------------------------------------
@@ -51,6 +67,25 @@ ALTER TABLE "_note_privileges" ADD
 
 
 -- ------------------------------------------------
+
+ALTER TABLE _group ADD  
+    CONSTRAINT group_owner FOREIGN KEY (group_owner)
+        REFERENCES _user (user_name);
+
+
+-- ------------------------------------------------
+
+ALTER TABLE "_group_user" ADD  
+    CONSTRAINT user_name FOREIGN KEY (user_name)
+        REFERENCES _user (user_name);
+
+ALTER TABLE "_group_user" ADD  
+    CONSTRAINT group_id FOREIGN KEY (group_id)
+        REFERENCES "_group" (group_id);
+
+
+-- ------------------------------------------------
+
 
 INSERT INTO "_user" (given_name,family_name,user_name,password) 
 VALUES 
