@@ -52,6 +52,7 @@ func main() {
 	router.HandleFunc("/login", login).Methods("GET")
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
+	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
@@ -359,6 +360,42 @@ func deleteNote(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "You cannot delete note because you are not logged in")
 	}
+}
+
+//==============SEARCH FOR A NOTE WITH PARTIAL TEXT SQL==============================
+func searchNotePartial(w http.ResponseWriter, r *http.Request) {
+	//Check if user is still online
+	if userStillLoggedIn(r) {
+		var notes []Note
+		usernameCookie, err := r.Cookie("username")
+		if err != nil {
+			log.Fatal(err)
+		}
+		username := usernameCookie.Value
+		//Connect to db
+		db := connectDatabase()
+		defer db.Close()
+		bodyText := mux.Vars(r)["id"]
+		stmt, err := db.Prepare("SELECT * FROM _note WHERE noteowner=$1 AND body ~ '" + bodyText + ":*';")
+		var note Note
+		rows, err := stmt.Query(username)
+		for rows.Next() {
+			err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+			if err != nil {
+				log.Fatal(err)
+			}
+			notes = append(notes, note)
+
+		}
+		fmt.Println(notes)
+		//just sending it straight to frontend for testing
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(notes)
+		//User is not logged in
+	} else {
+		fmt.Fprintf(w, "Not Logged in!")
+	}
+
 }
 
 //insertion sort
