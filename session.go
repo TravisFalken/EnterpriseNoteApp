@@ -69,7 +69,6 @@ func addSessionToUser(user User, sessionID string) bool {
 func userStillLoggedIn(req *http.Request) bool {
 	var username string
 	sessionCookie, err := req.Cookie("session")
-	log.Println(sessionCookie.Value) //For testing
 	if err != nil {
 		return false
 	}

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"text/template"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,6 +31,12 @@ type User struct {
 	SessionID  string `json:"sessionID"`
 }
 
+var tpl *template.Template
+
+func init() {
+	tpl = template.Must(template.ParseGlob("templates/*"))
+}
+
 var note Note //For testing dummy data
 var user User //For testing dummy data
 
@@ -46,10 +53,11 @@ func main() {
 	//setupDB()
 
 	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", firstContact).Methods("GET")
 	router.HandleFunc("/createUser", addUser).Methods("POST")
 	router.HandleFunc("/createNote", addNote).Methods("POST")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
-	router.HandleFunc("/login", login).Methods("GET")
+	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
 	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
@@ -121,11 +129,29 @@ func setupDB() {
 	_, err = db.Exec(_note_privilegesQuery)
 }
 
+//This method runs the first time the user trys to access the webapp
+//Looking for a better function name XD
+func firstContact(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		err := tpl.ExecuteTemplate(w, "index.gohtml", nil)
+		if err != nil {
+			log.Fatal(err)
+		} //Placeholder, will change to redirect to home page
+	} else {
+
+		err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
+
 //=========================Checks if user login details are correct=========================================
 func login(w http.ResponseWriter, r *http.Request) {
 	var loginUser User
-	req, _ := ioutil.ReadAll(r.Body)
-	json.Unmarshal(req, &loginUser)
+	loginUser.UserName = r.FormValue("username")
+	loginUser.Password = r.FormValue("password")
 	if userNameExists(loginUser.UserName) {
 
 		if validatePass(loginUser.Password) {
@@ -147,12 +173,19 @@ func login(w http.ResponseWriter, r *http.Request) {
 			}
 			//Set a cookie to username
 			http.SetCookie(w, usernameCookie)
-			fmt.Fprintf(w, "Successfully logged in")
+			//Send the home page to user
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
-			fmt.Fprintf(w, "Login not successfull")
+			err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	} else {
-		fmt.Fprintf(w, "Login not successfull")
+		err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }
