@@ -57,6 +57,7 @@ func main() {
 	router.HandleFunc("/home", home).Methods("GET")
 	router.HandleFunc("/createUser", addUser).Methods("POST")
 	router.HandleFunc("/createNote", addNote).Methods("POST")
+	router.HandleFunc("/signUp", signUp).Methods("GET")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
 	router.HandleFunc("/logout", logout).Methods("GET")
@@ -153,6 +154,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
+}
+
+//===========================THE SIGNUP Page============================================
+func signUp(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+
+	} else {
+		tpl.ExecuteTemplate(w, "signup.gohtml", nil)
+	}
+
 }
 
 //=========================Checks if user login details are correct=========================================
@@ -263,9 +275,16 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 
 	var newUser User
 	//Get user information out of body of HTTP
-	reqBody, _ := ioutil.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &newUser)
+	/*
+		reqBody, _ := ioutil.ReadAll(r.Body)
+		json.Unmarshal(reqBody, &newUser)
+	*/
 
+	newUser.UserName = r.FormValue("user_name")
+	newUser.GivenName = r.FormValue("given_name")
+	newUser.FamilyName = r.FormValue("family_name")
+	newUser.Email = r.FormValue("email")
+	newUser.Password = r.FormValue("password")
 	//Create connection to server
 	//Connect to db
 	db := connectDatabase()
@@ -274,7 +293,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
 		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5);")
+		stmt, err := db.Prepare("INSERT INTO _user(user_name, password, email, given_name, family_name) VALUES($1,$2,$3,$4,$5);")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -283,7 +302,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Fprintf(w, "Added user")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
 		fmt.Fprintf(w, "Username already exists")
 	}
@@ -398,9 +417,11 @@ func listAllUses(loggedInUser string) []string {
 func logout(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		deleteSesion(w, r)
-		fmt.Fprintf(w, "Successfully logged out")
+		//fmt.Fprintf(w, "Successfully logged out")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
-		fmt.Fprintf(w, "Already Logged out")
+		//fmt.Fprintf(w, "Already logged out")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
 }
