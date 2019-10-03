@@ -53,11 +53,12 @@ func main() {
 	//setupDB()
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", firstContact).Methods("GET")
+	router.HandleFunc("/", index).Methods("GET")
+	router.HandleFunc("/home", home).Methods("GET")
 	router.HandleFunc("/createUser", addUser).Methods("POST")
 	router.HandleFunc("/createNote", addNote).Methods("POST")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
-	router.HandleFunc("/login", login).Methods("POST")
+	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
 	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
@@ -131,63 +132,76 @@ func setupDB() {
 
 //This method runs the first time the user trys to access the webapp
 //Looking for a better function name XD
-func firstContact(w http.ResponseWriter, r *http.Request) {
+func index(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
-		err := tpl.ExecuteTemplate(w, "index.gohtml", nil)
-		if err != nil {
-			log.Fatal(err)
-		} //Placeholder, will change to redirect to home page
-	} else {
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+		return
+	}
+	err := tpl.ExecuteTemplate(w, "index.gohtml", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-		err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
+//============This is the home page===============================
+func home(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		err := tpl.ExecuteTemplate(w, "home.gohtml", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
-
 }
 
 //=========================Checks if user login details are correct=========================================
 func login(w http.ResponseWriter, r *http.Request) {
-	var loginUser User
-	loginUser.UserName = r.FormValue("username")
-	loginUser.Password = r.FormValue("password")
-	if userNameExists(loginUser.UserName) {
+	if userStillLoggedIn(r) {
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodPost {
 
-		if validatePass(loginUser.Password) {
+		var loginUser User
+		loginUser.UserName = r.FormValue("username")
+		loginUser.Password = r.FormValue("password")
+		if userNameExists(loginUser.UserName) {
 
-			//create new session id
-			sessionid := newSessionid()
-			//Add session id to the user in the database
-			addSessionToUser(loginUser, sessionid)
-			//set the clients session cookie
-			sessionCookie := &http.Cookie{
-				Name:  "session",
-				Value: sessionid,
+			if validatePass(loginUser.Password) {
+
+				//create new session id
+				sessionid := newSessionid()
+				//Add session id to the user in the database
+				addSessionToUser(loginUser, sessionid)
+				//set the clients session cookie
+				sessionCookie := &http.Cookie{
+					Name:  "session",
+					Value: sessionid,
+				}
+				http.SetCookie(w, sessionCookie)
+				//Create username cookie
+				usernameCookie := &http.Cookie{
+					Name:  "username",
+					Value: loginUser.UserName,
+				}
+				//Set a cookie to username
+				http.SetCookie(w, usernameCookie)
+				//Send the home page to user
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+			} else {
+				http.Error(w, "username and/or password does not match", http.StatusForbidden)
+				return
 			}
-			http.SetCookie(w, sessionCookie)
-			//Create username cookie
-			usernameCookie := &http.Cookie{
-				Name:  "username",
-				Value: loginUser.UserName,
-			}
-			//Set a cookie to username
-			http.SetCookie(w, usernameCookie)
-			//Send the home page to user
-			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
-			err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	} else {
-		err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
-		if err != nil {
-			log.Fatal(err)
+			http.Error(w, "username and/or password does not match", http.StatusForbidden)
+			return
 		}
 	}
-
+	err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 //Validate if the username already exists in the database  (username has to be unique)
