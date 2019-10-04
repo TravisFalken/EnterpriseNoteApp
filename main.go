@@ -13,22 +13,22 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Note struct {
-	NoteID      int    `json: "noteID"`
-	NoteTitle   string `json:"noteTitle"`
-	NoteBody    string `json: "noteBody"`
-	CreatedDate string `json: "createdDate"`
-	NoteOwner   string `json:"noteOwner"`
-}
+// type Note struct {
+// 	NoteID      int    `json: "noteID"`
+// 	NoteTitle   string `json:"noteTitle"`
+// 	NoteBody    string `json: "noteBody"`
+// 	CreatedDate string `json: "createdDate"`
+// 	NoteOwner   string `json:"noteOwner"`
+// }
 
-type User struct {
-	UserName   string `json:"userName"`
-	Password   string `json:"password"` //This will normally be encripted
-	Email      string `json:"email"`
-	GivenName  string `json:"givenName"`
-	FamilyName string `json:"familyName"`
-	SessionID  string `json:"sessionID"`
-}
+// type User struct {
+// 	UserName   string `json:"userName"`
+// 	Password   string `json:"password"` //This will normally be encripted
+// 	Email      string `json:"email"`
+// 	GivenName  string `json:"givenName"`
+// 	FamilyName string `json:"familyName"`
+// 	SessionID  string `json:"sessionID"`
+//}
 
 var note Note //For testing dummy data
 var user User //For testing dummy data
