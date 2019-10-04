@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -48,58 +47,58 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//Validate if the username already exists in the database  (username has to be unique)
-//Return true if username exists
-func userNameExists(username string) bool {
-	var name string
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
+// //Validate if the username already exists in the database  (username has to be unique)
+// //Return true if username exists
+// func userNameExists(username string) bool {
+// 	var name string
+// 	//Connect to db
+// 	db := connectDatabase()
+// 	defer db.Close()
 
-	//Prepare query to check if the username already exists
-	getUserName, err := db.Prepare("Select user_name FROM _user WHERE user_name = $1;")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = getUserName.QueryRow(username).Scan(&name)
-	//if error username does not exist in database
-	if err == sql.ErrNoRows {
-		return false
-	}
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	//Username does exist in the database
-	return true
-}
+// 	//Prepare query to check if the username already exists
+// 	getUserName, err := db.Prepare("Select user_name FROM _user WHERE user_name = $1;")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	err = getUserName.QueryRow(username).Scan(&name)
+// 	//if error username does not exist in database
+// 	if err == sql.ErrNoRows {
+// 		return false
+// 	}
+// 	if err != nil {
+// 		log.Fatal(err.Error())
+// 	}
+// 	//Username does exist in the database
+// 	return true
+// }
 
-//===================Validate Password=============================
-func validatePass(password string) bool {
-	var pass string
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
+// //===================Validate Password=============================
+// func validatePass(password string) bool {
+// 	var pass string
+// 	//Connect to db
+// 	db := connectDatabase()
+// 	defer db.Close()
 
-	//prepare statement to check for password
-	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1;")
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	//prepare statement to check for password
+// 	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1;")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	err = stmt.QueryRow(password).Scan(&pass)
-	//if nothing is returned
-	if err == sql.ErrNoRows {
-		//password does not match
-		return false
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	err = stmt.QueryRow(password).Scan(&pass)
+// 	//if nothing is returned
+// 	if err == sql.ErrNoRows {
+// 		//password does not match
+// 		return false
+// 	}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	//password matches
-	return true
+// 	//password matches
+// 	return true
 
-}
+// }
 
 //====================ADD USER=====================================
 func addUser(w http.ResponseWriter, r *http.Request) {
