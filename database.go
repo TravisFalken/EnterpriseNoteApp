@@ -42,3 +42,126 @@ func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 	}
 	return false
 }
+
+// Add User
+func addUserSQL(newUser User) string {
+
+	db := connectDatabase()
+	defer db.Close()
+
+	if !userNameExists(newUser.UserName) {
+		//Prepare insert to stop SQL injections
+		log.Println("Entered add user if statement")
+		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5);")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return "Added user"
+	}
+
+	return "Username already exists"
+
+}
+
+// Add Note
+
+func addNoteSQL(newNote Note) string {
+
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare insert to stop SQL injections
+	stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4);")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return "New Note Added"
+	//User is not logged in
+
+}
+
+// List All Notes
+
+func listAllNotesSQL(username string) []Note {
+
+	var notes []Note
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+	var note Note
+	rows, err := stmt.Query(username)
+	for rows.Next() {
+		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		if err != nil {
+			log.Fatal(err)
+		}
+		notes = append(notes, note)
+
+	}
+	return notes
+}
+
+// List all users
+func listAllUsersSQL(loggedInUser string) []string {
+	var users []string
+	var username string
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+
+	//Send query to the db
+	rows, err := db.Query("SELECT user_name FROM _user;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&username)
+		//Make sure we dont add logged in user to recommended
+		if loggedInUser != username {
+			users = append(users, username)
+		}
+	}
+	return users
+}
+
+// partial search
+
+func partialTextSearchSQL(bodyText string, username string) []Note {
+	var notes []Note
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+
+	bodyText += ":*" //for testing
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var note Note
+	rows, err := stmt.Query(username, bodyText)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+		if err != nil {
+			log.Fatal(err)
+		}
+		notes = append(notes, note)
+
+	}
+	return notes
+}

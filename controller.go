@@ -110,27 +110,29 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal(reqBody, &newUser)
 
+	fmt.Fprintf(w, addUserSQL(newUser))
+
 	//Create connection to server
 	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
+	// db := connectDatabase()
+	// defer db.Close()
 
-	if !userNameExists(newUser.UserName) {
-		//Prepare insert to stop SQL injections
-		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5);")
-		if err != nil {
-			log.Fatal(err)
-		}
+	// if !userNameExists(newUser.UserName) {
+	// 	//Prepare insert to stop SQL injections
+	// 	log.Println("Entered add user if statement")
+	// 	stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5);")
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
 
-		_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Fprintf(w, "Added user")
-	} else {
-		fmt.Fprintf(w, "Username already exists")
-	}
+	// 	_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	fmt.Fprintf(w, "Added user")
+	// } else {
+	// 	fmt.Fprintf(w, "Username already exists")
+	// }
 
 }
 
@@ -154,23 +156,25 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		newNote.CreatedDate = noteTime.String()
 		newNote.NoteOwner = username
 
+		fmt.Fprintf(w, addNoteSQL(newNote))
+
 		//Connect to db
-		db := connectDatabase()
-		defer db.Close()
+		// db := connectDatabase()
+		// defer db.Close()
 
-		//Prepare insert to stop SQL injections
-		stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4);")
-		if err != nil {
-			log.Fatal(err)
-		}
+		// //Prepare insert to stop SQL injections
+		// stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4);")
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
-		_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner)
-		if err != nil {
-			log.Fatal(err)
-		}
+		// _, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
-		fmt.Fprintf(w, "New Note Added")
-		//User is not logged in
+		// fmt.Fprintf(w, "New Note Added")
+		// //User is not logged in
 	} else {
 		fmt.Fprintf(w, "You are not logged in!")
 	}
@@ -182,26 +186,28 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 func listNotes(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
 	if userStillLoggedIn(r) {
-		var notes []Note
+
 		usernameCookie, err := r.Cookie("username")
 		if err != nil {
 			log.Fatal(err)
 		}
 		username := usernameCookie.Value
+		notes := listAllNotesSQL(username)
+		//var notes []Note
 		//Connect to db
-		db := connectDatabase()
-		defer db.Close()
-		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
-		var note Note
-		rows, err := stmt.Query(username)
-		for rows.Next() {
-			err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
-			if err != nil {
-				log.Fatal(err)
-			}
-			notes = append(notes, note)
+		// db := connectDatabase()
+		// defer db.Close()
+		// stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+		// var note Note
+		// rows, err := stmt.Query(username)
+		// for rows.Next() {
+		// 	err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		// 	if err != nil {
+		// 		log.Fatal(err)
+		// 	}
+		// 	notes = append(notes, note)
 
-		}
+		// }
 		fmt.Println(notes)
 		//just sending it straight to frontend for testing
 		w.Header().Set("Content-Type", "application/json")
@@ -216,26 +222,26 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 //============================================LIST ALL REGISTERED USERS=====================
 //This function creates a list of all registerd users
 func listAllUses(loggedInUser string) []string {
-	var users []string
-	var username string
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
+	// var users []string
+	// var username string
+	// //Connect to db
+	// db := connectDatabase()
+	// defer db.Close()
 
-	//Send query to the db
-	rows, err := db.Query("SELECT user_name FROM _user;")
-	if err != nil {
-		log.Fatal(err)
-	}
-	for rows.Next() {
-		err = rows.Scan(&username)
-		//Make sure we dont add logged in user to recommended
-		if loggedInUser != username {
-			users = append(users, username)
-		}
-	}
+	// //Send query to the db
+	// rows, err := db.Query("SELECT user_name FROM _user;")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// for rows.Next() {
+	// 	err = rows.Scan(&username)
+	// 	//Make sure we dont add logged in user to recommended
+	// 	if loggedInUser != username {
+	// 		users = append(users, username)
+	// 	}
+	// }
 
-	return users
+	return listAllUsersSQL(loggedInUser)
 }
 
 //=========================USER LOGOUT======================================================
@@ -268,30 +274,32 @@ func deleteNote(w http.ResponseWriter, r *http.Request) {
 func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
 	if userStillLoggedIn(r) {
-		var notes []Note
-		username := getUserName(r)
-		//Connect to db
-		db := connectDatabase()
-		defer db.Close()
-		bodyText := mux.Vars(r)["id"]
-		bodyText += ":*" //for testing
-		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
-		if err != nil {
-			log.Fatal(err)
-		}
-		var note Note
-		rows, err := stmt.Query(username, bodyText)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for rows.Next() {
-			err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
-			if err != nil {
-				log.Fatal(err)
-			}
-			notes = append(notes, note)
 
-		}
+		bodyText := mux.Vars(r)["id"]
+		username := getUserName(r)
+		notes := partialTextSearchSQL(bodyText, username)
+		//Connect to db
+		// db := connectDatabase()
+		// defer db.Close()
+
+		// bodyText += ":*" //for testing
+		// stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// var note Note
+		// rows, err := stmt.Query(username, bodyText)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// for rows.Next() {
+		// 	err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+		// 	if err != nil {
+		// 		log.Fatal(err)
+		// 	}
+		// 	notes = append(notes, note)
+
+		// }
 		fmt.Println(notes)
 		//just sending it straight to frontend for testing
 		w.Header().Set("Content-Type", "application/json")
