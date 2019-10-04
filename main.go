@@ -14,7 +14,7 @@ import (
 )
 
 // type Note struct {
-// 	NoteID      int    `json: "noteID"`
+// 	NoteID      int    `json: "noteID"` // can remove but left here just incase we need to remeber anything
 // 	NoteTitle   string `json:"noteTitle"`
 // 	NoteBody    string `json: "noteBody"`
 // 	CreatedDate string `json: "createdDate"`
@@ -54,71 +54,6 @@ func main() {
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
 	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
-}
-
-//Set up database
-func setupDB() {
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
-
-	/*
-		test := `DROP TABLE IF EXISTS Client;
-				CREATE TABLE Client(
-				Year integer,
-				Measure character varying(50),
-				Technology character varying(50),
-				Value integer,
-				ValueUnit character varying(50),
-				ValueLabel character varying(50),
-				NullReason character varying(50)
-			);`
-	*/
-
-	_note_privilegesQuery := `CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
-				note_privileges_id integer PRIMARY KEY NOT NULL,
-				note_id integer,
-				user_name character varying(50),
-				read CHAR(1), -- t for true  f for false
-				write CHAR(1) -- t for true  f for false
-			);`
-
-	userTableQuery := `DROP TABLE IF EXISTS _user CASCADE;
-				CREATE TABLE _user(
-					user_name  character varying(50) NOT NULL PRIMARY KEY,
-					password character varying(50) NOT NULL,
-					email character varying(250) NOT NULL,
-					given_name character varying(50) NOT NULL,
-					family_name character varying(50) NOT NULL,
-					session_id character varying(250)
-				);`
-	noteTableQuery := `DROP TABLE IF EXISTS _Note;
-				CREATE TABLE _Note(
-				note_id serial PRIMARY KEY,
-				title character varying(50) NOT NULL,
-				body TEXT NOT NULL,
-				date_created character varying(250) NOT NULL,
-				note_owner character varying(50) NOT NULL,
-				FOREIGN KEY(note_owner) REFERENCES _user(user_name)
-			);`
-
-	/*
-		_, err = db.Exec(userTableQuery)
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-	_, err := db.Exec(userTableQuery)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(noteTableQuery)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(_note_privilegesQuery)
 }
 
 //=========================Checks if user login details are correct=========================================
