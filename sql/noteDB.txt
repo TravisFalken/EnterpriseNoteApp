@@ -87,29 +87,29 @@ ALTER TABLE "_group_user" ADD
 -- ------------------------------------------------
 
 
-INSERT INTO "_user" (given_name,family_name,user_name,password) 
+INSERT INTO "_user" (given_name,family_name,user_name,password,email) 
 VALUES 
-('Travis', 'Falkenberg', 'Trav3', '1234'),
-('Mohammad','Vaughn','Vaughn1','password'),
-('Curran','Cochran','Curran85','password'),
-('Yoshio','Bernard','BernardsProfile','password'),
-('Hiram','Matthews','Matthews_Hiram','password'),
-('Kenyon','Wall','Grand_Kenyon','password'),
-('Carson','Gillespie','Carson123','password'),
-('Hayes','Vinson','Hayes45','password'),
-('Jermaine','Alvarado','Jermaine321','password'),
-('Andrew','House','Andrew222','password'),
-('Rooney','Fowler','Wayne_Rooney','password'),
-('Abbot','Greene','Abbot_Time','password'),
-('Brandon','Terrell','Daniel_Massey','password'),
-('Donovan','Morris','Forrest_Stafford','password'),
-('Isaac','Gomez','Griffith_Dean','password'),
-('Plato','Myers','Griffith_Young','password'),
-('Omar','Caldwell','Nevada_Marsh','password'),
-('Aquila','Wyatt','Hall_Owen','password'),
-('Sean','Vincent','Cameran_Warner','password'),
-('Jonah','Rodriguez','Gannon_Cantrell','password'),
-('Zahir','Olsen','Audra_Summers','password');
+('Travis', 'Falkenberg', 'Trav3', '1234', 'fakeemail1@gmail.com'),
+('Mohammad','Vaughn','Vaughn1','password', 'fakeemail1@gmai2.com'),
+('Curran','Cochran','Curran85','password', 'fakeemail1@gmai3.com'),
+('Yoshio','Bernard','BernardsProfile','password', 'fakeemail1@gmai4.com'),
+('Hiram','Matthews','Matthews_Hiram','password', 'fakeemail1@gmai5.com'),
+('Kenyon','Wall','Grand_Kenyon','password', 'fakeemail1@gmai6.com'),
+('Carson','Gillespie','Carson123','password', 'fakeemail1@gmai7.com'),
+('Hayes','Vinson','Hayes45','password', 'fakeemail1@gmai8.com'),
+('Jermaine','Alvarado','Jermaine321','password', 'fakeemail1@gmai9.com'),
+('Andrew','House','Andrew222','password', 'fakeemail1@gmail0.com'),
+('Rooney','Fowler','Wayne_Rooney','password', 'fakeemail1@gmail1.com'),
+('Abbot','Greene','Abbot_Time','password', 'fakeemail1@gmail2.com'),
+('Brandon','Terrell','Daniel_Massey','password', 'fakeemail1@gmail3.com'),
+('Donovan','Morris','Forrest_Stafford','password', 'fakeemail1@gmail4.com'),
+('Isaac','Gomez','Griffith_Dean','password', 'fakeemail1@gmail5.com'),
+('Plato','Myers','Griffith_Young','password', 'fakeemail1@gmail6.com'),
+('Omar','Caldwell','Nevada_Marsh','password', 'fakeemail1@gmail7.com'),
+('Aquila','Wyatt','Hall_Owen','password', 'fakeemail1@gmail8.com'),
+('Sean','Vincent','Cameran_Warner','password', 'fakeemail1@gmail9.com'),
+('Jonah','Rodriguez','Gannon_Cantrell','password', 'fakeemail1@gmai20.com'),
+('Zahir','Olsen','Audra_Summers','password', 'fakeemail1@gmai21.com');
 
 
 
