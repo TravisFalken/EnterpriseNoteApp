@@ -3,9 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
-	"net/http"
 
-	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -76,15 +74,14 @@ func validatePass(password string) bool {
 
 //===================Delete Specific note=============================
 
-func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
+func deleteSpecificNote(noteid string, username string) (noteDeleted bool) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
 	//get the id of the note the user wants to delete
-	noteid := mux.Vars(r)["id"]
 
 	//get the actually username out of the cookie
-	username := getUserName(r)
+
 	stmt, err := db.Prepare("DELETE FROM _note WHERE note_owner=$1 AND note_id=$2;")
 	if err != nil {
 		log.Fatal(err)

@@ -258,8 +258,10 @@ func logout(w http.ResponseWriter, r *http.Request) {
 func deleteNote(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still logged in
 	if userStillLoggedIn(r) {
+		noteid := mux.Vars(r)["id"]
+		username := getUserName(r)
 		//deletes a note and returns true if deleted
-		if deleteSpecificNote(r) {
+		if deleteSpecificNote(noteid, username) {
 			fmt.Fprintf(w, "Successfully Deleted")
 		} else {
 			fmt.Fprintf(w, "Not Successful")
