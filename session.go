@@ -10,14 +10,14 @@ import (
 )
 
 //==================gets the user from database with the session id================================
-func getUser(sessionid string) (user *User, userFound bool) {
+func getUser(sessionid string) (user User) {
 
 	//Connect to db
 	db := connectDatabase()
 	defer db.Close()
 
 	//Prepare query for getting user with the session id
-	stmt, err := db.Prepare("SELECT user_name,email,given_name FROM _user WHERE session_id = $1;")
+	stmt, err := db.Prepare("SELECT user_name,given_name,family_name FROM _user WHERE session_id = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,19 +28,14 @@ func getUser(sessionid string) (user *User, userFound bool) {
 	}
 	//run through the row
 	for rows.Next() {
-		err = rows.Scan(&user)
+		err = rows.Scan(&user.UserName, &user.GivenName, &user.FamilyName)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	}
-	//Checks if no user has been returned does not match session id
-	if user == nil {
-		userFound = false
-		return user, userFound
-	}
-	userFound = true
-	return user, userFound
+
+	return user
 
 }
 
@@ -113,11 +108,7 @@ func getUserName(req *http.Request) (username string) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	sessionIDCookie, err := req.Cookie("session")
-	if err != nil {
-		log.Fatal(err)
-	}
-	sessionID := sessionIDCookie.Value
+	sessionID := getSession(req)
 
 	//Prepare Query
 	stmt, err := db.Prepare("SELECT user_name FROM _user WHERE session_id=$1;")
@@ -137,4 +128,16 @@ func getUserName(req *http.Request) (username string) {
 		}
 	}
 	return username
+}
+
+//===================GET sessionid as string==================================
+func getSession(r *http.Request) (sessionid string) {
+	sessionCookie, err := r.Cookie("session")
+	if err != nil {
+		sessionid = " "
+		return sessionid
+	}
+	sessionid = sessionCookie.Value
+	return sessionid
+
 }

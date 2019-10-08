@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"text/template"
@@ -15,20 +14,20 @@ import (
 )
 
 type Note struct {
-	NoteID      int    `json: "noteID"`
-	NoteTitle   string `json:"noteTitle"`
-	NoteBody    string `json: "noteBody"`
-	CreatedDate string `json: "createdDate"`
-	NoteOwner   string `json:"noteOwner"`
+	NoteID      int    `json: "note_id"`
+	NoteTitle   string `json:"title"`
+	NoteBody    string `json: "note_body"`
+	CreatedDate string `json: "date_created"`
+	NoteOwner   string `json:"note_owner"`
 }
 
 type User struct {
-	UserName   string `json:"userName"`
+	UserName   string `json:"user_name"`
 	Password   string `json:"password"` //This will normally be encripted
 	Email      string `json:"email"`
-	GivenName  string `json:"givenName"`
-	FamilyName string `json:"familyName"`
-	SessionID  string `json:"sessionID"`
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
+	SessionID  string `json:"session_id"`
 }
 
 var tpl *template.Template
@@ -56,7 +55,8 @@ func main() {
 	router.HandleFunc("/", index).Methods("GET")
 	router.HandleFunc("/home", home).Methods("GET")
 	router.HandleFunc("/createUser", addUser).Methods("POST")
-	router.HandleFunc("/createNote", addNote).Methods("POST")
+	router.HandleFunc("/createNote", createNote).Methods("GET") //For the html page
+	router.HandleFunc("/addNote", addNote).Methods("POST")
 	router.HandleFunc("/signUp", signUp).Methods("GET")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
@@ -147,7 +147,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 //============This is the home page===============================
 func home(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
-		err := tpl.ExecuteTemplate(w, "home.gohtml", nil)
+		sessionid := getSession(r)
+		user := getUser(sessionid)
+		log.Println(user)
+		err := tpl.ExecuteTemplate(w, "home.gohtml", user)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -167,6 +170,15 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//=====================THE CREATE NOTE PAGE===========================================
+func createNote(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		tpl.ExecuteTemplate(w, "createNote.gohtml", nil)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
 //=========================Checks if user login details are correct=========================================
 func login(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
@@ -180,7 +192,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		loginUser.Password = r.FormValue("password")
 		if userNameExists(loginUser.UserName) {
 
-			if validatePass(loginUser.Password) {
+			if validatePass(loginUser.Password, loginUser.UserName) {
 
 				//create new session id
 				sessionid := newSessionid()
@@ -200,6 +212,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 				//Set a cookie to username
 				http.SetCookie(w, usernameCookie)
 				//Send the home page to user
+				log.Println("successfully logged in") // for testing
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			} else {
 				http.Error(w, "username and/or password does not match", http.StatusForbidden)
@@ -242,19 +255,19 @@ func userNameExists(username string) bool {
 }
 
 //===================Validate Password=============================
-func validatePass(password string) bool {
+func validatePass(password string, username string) bool {
 	var pass string
 	//Connect to db
 	db := connectDatabase()
 	defer db.Close()
 
 	//prepare statement to check for password
-	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1;")
+	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1 AND user_name = $2;")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = stmt.QueryRow(password).Scan(&pass)
+	err = stmt.QueryRow(password, username).Scan(&pass)
 	//if nothing is returned
 	if err == sql.ErrNoRows {
 		//password does not match
@@ -322,11 +335,11 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		username := usernameCookie.Value
 
 		//Get the body and put it into a a note struct
-		reqBody, _ := ioutil.ReadAll(r.Body)
-		json.Unmarshal(reqBody, &newNote)
+		newNote.NoteTitle = r.FormValue("title")
+		newNote.NoteBody = r.FormValue("body")
 
 		//set the created date of the note
-		newNote.CreatedDate = noteTime.String()
+		newNote.CreatedDate = noteTime.Format("2009-01-02")
 		newNote.NoteOwner = username
 
 		//Connect to db
@@ -347,7 +360,8 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "New Note Added")
 		//User is not logged in
 	} else {
-		fmt.Fprintf(w, "You are not logged in!")
+		//fmt.Fprintf(w, "You are not logged in!")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
 }
