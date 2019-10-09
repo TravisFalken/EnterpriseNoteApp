@@ -21,6 +21,11 @@ type Note struct {
 	NoteOwner   string `json:"note_owner"`
 }
 
+type Notes struct {
+	OwnedNotes  []Note
+	PartOfNotes []Note
+}
+
 type User struct {
 	UserName   string `json:"user_name"`
 	Password   string `json:"password"` //This will normally be encripted
@@ -59,6 +64,7 @@ func main() {
 	router.HandleFunc("/addNote", addNote).Methods("POST")
 	router.HandleFunc("/signUp", signUp).Methods("GET")
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
+	router.HandleFunc("/listNotes", allNotes).Methods("GET")
 	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
@@ -338,8 +344,8 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		newNote.NoteTitle = r.FormValue("title")
 		newNote.NoteBody = r.FormValue("body")
 
-		//set the created date of the note
-		newNote.CreatedDate = noteTime.Format("2009-01-02")
+		newNote.CreatedDate = noteTime.Format("2006-01-02")
+		log.Println(newNote.CreatedDate) // For testing
 		newNote.NoteOwner = username
 
 		//Connect to db
@@ -453,6 +459,50 @@ func deleteNote(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "You cannot delete note because you are not logged in")
 	}
+}
+
+//==============List All Notes that user owners and is part of==================================
+func allNotes(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		var username = getUserName(r)
+		var notes Notes
+		notes.OwnedNotes = getOwndedNotes(username)
+		notes.PartOfNotes = getPartOfNotes(username)
+		log.Println(notes) //For testing
+		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
+
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//==================GET ALL OWNED NOTES=====================================
+func getOwndedNotes(username string) (notes []Note) {
+	//Connect to Database
+	db := connectDatabase()
+	defer db.Close()
+	var note Note
+	//Prepare Statment
+	stmt, err := db.Prepare("SELECT title, body, date_created FROM _note WHERE note_owner=$1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		notes = append(notes, note)
+	}
+
+	return notes
+}
+
+//==========GET NOTES That you are only appart of====================
+//Still need to do
+func getPartOfNotes(username string) (notes []Note) {
+	return notes
 }
 
 //==============SEARCH FOR A NOTE WITH PARTIAL TEXT SQL==============================
