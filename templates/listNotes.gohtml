@@ -33,9 +33,17 @@
             </section>
             <h3>Notes you are Apart of</h3>
             <section id="notesPartOf">
-
+                {{with .PartOfNotes}}
+                    {{range .}}
+                    <p>test part of notes</p>
+                        <div class="pannel">
+                            <h3>{{.NoteTitle}}</h3>
+                            <p>{{.NoteBody}}</p>
+                            <p>{{.CreatedDate}}</p>
+                        </div>
+                    {{end}}
+                {{end}}
             </section>
         </main>
     </body>
 </html>
-

@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net/http"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -74,14 +76,15 @@ func validatePass(password string, username string) bool {
 
 //===================Delete Specific note=============================
 
-func deleteSpecificNote(noteid string, username string) (noteDeleted bool) {
+func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
 	//get the id of the note the user wants to delete
+	noteid := mux.Vars(r)["id"]
 
 	//get the actually username out of the cookie
-
+	username := getUserName(r)
 	stmt, err := db.Prepare("DELETE FROM _note WHERE note_owner=$1 AND note_id=$2;")
 	if err != nil {
 		log.Fatal(err)
@@ -219,28 +222,5 @@ func partialTextSearchSQL(bodyText string, username string) []Note {
 		notes = append(notes, note)
 
 	}
-	return notes
-}
-
-//==================GET ALL OWNED NOTES=====================================
-func getOwndedNotes(username string) (notes []Note) {
-	//Connect to Database
-	db := connectDatabase()
-	defer db.Close()
-	var note Note
-	//Prepare Statment
-	stmt, err := db.Prepare("SELECT title, body, date_created FROM _note WHERE note_owner=$1")
-	if err != nil {
-		log.Fatal(err)
-	}
-	rows, err := stmt.Query(username)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for rows.Next() {
-		err = rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate)
-		notes = append(notes, note)
-	}
-
 	return notes
 }

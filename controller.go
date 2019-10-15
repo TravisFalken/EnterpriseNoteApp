@@ -52,7 +52,9 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 //=====================THE CREATE NOTE PAGE===========================================
 func createNote(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
-		tpl.ExecuteTemplate(w, "createNote.gohtml", nil)
+		user := getUserName(r)
+		users := listAllUses(user)
+		tpl.ExecuteTemplate(w, "createNote.gohtml", users)
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
@@ -118,21 +120,59 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	//json.Unmarshal(reqBody, &newUser)
 
 	// new add user
+
+	//Not Sure
+	/*
+		fmt.Println("Entered addUser()") // For testing
+
+		var newUser User
+		newUser.UserName = r.FormValue("user_name")
+		newUser.GivenName = r.FormValue("given_name")
+		newUser.FamilyName = r.FormValue("family_name")
+		newUser.Email = r.FormValue("email")
+		newUser.Password = r.FormValue("password")
+		if !userNameExists(newUser.UserName) {
+			fmt.Fprintf(w, addUserSQL(newUser))
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		} else {
+			fmt.Fprintf(w, "Username already exists")
+		}
+	*/
 	fmt.Println("Entered addUser()") // For testing
 
 	var newUser User
+	//Get user information out of body of HTTP
+	/*
+		reqBody, _ := ioutil.ReadAll(r.Body)
+		json.Unmarshal(reqBody, &newUser)
+	*/
+
 	newUser.UserName = r.FormValue("user_name")
 	newUser.GivenName = r.FormValue("given_name")
 	newUser.FamilyName = r.FormValue("family_name")
 	newUser.Email = r.FormValue("email")
 	newUser.Password = r.FormValue("password")
+	//Create connection to server
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+
 	if !userNameExists(newUser.UserName) {
-		fmt.Fprintf(w, addUserSQL(newUser))
+		//Prepare insert to stop SQL injections
+		log.Println("Entered add user if statement")
+		stmt, err := db.Prepare("INSERT INTO _user(user_name, password, email, given_name, family_name) VALUES($1,$2,$3,$4,$5);")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
+		if err != nil {
+			log.Fatal(err)
+		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
 		fmt.Fprintf(w, "Username already exists")
 	}
-
 }
 
 //==========================ADD NOTE=============================================================
@@ -150,14 +190,63 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		//Get the body and put it into a a note struct
 		newNote.NoteTitle = r.FormValue("title")
 		newNote.NoteBody = r.FormValue("body")
-
 		newNote.CreatedDate = noteTime.Format("2006-01-02")
 		log.Println(newNote.CreatedDate) // For testing
 		newNote.NoteOwner = username
 
-		fmt.Fprintf(w, addNoteSQL(newNote))
+		//Connect to db
+		db := connectDatabase()
+		defer db.Close()
 
+		//Prepare insert to stop SQL injections
+		var noteId string
+		stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4) RETURNING note_id;")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = stmt.QueryRow(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner).Scan(&noteId)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//Get users attached to note and add them to the database
+		var read string
+		var write string
+
+		stmt, err = db.Prepare("INSERT INTO _note_privileges(note_id, user_name, read, write) VALUES($1,$2,$3,$4);")
+		if err != nil {
+			log.Fatal(err)
+		}
+		users := r.Form["users"]
+		for _, user := range users {
+
+			log.Println("User: " + user)
+			readCheckbox := r.FormValue("readCheckbox_" + user)
+			writeCheckbox := r.FormValue("writeCheckbox_" + user)
+			//Check that user has read privlages
+			if readCheckbox != "" {
+				read = "t"
+			} else {
+				read = "f"
+			}
+			//Check that the user has write privlages
+			if writeCheckbox != "" {
+				write = "t"
+			} else {
+				write = "f"
+			}
+
+			_, err = stmt.Exec(noteId, user, read, write)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("Read:" + read) //For testing
+		}
+		log.Println(users) //for testing
+		fmt.Fprintf(w, "New Note Added")
+		//User is not logged in
 	} else {
+		//fmt.Fprintf(w, "You are not logged in!")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
@@ -168,14 +257,26 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 func listNotes(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
 	if userStillLoggedIn(r) {
-
+		var notes []Note
 		usernameCookie, err := r.Cookie("username")
 		if err != nil {
 			log.Fatal(err)
 		}
 		username := usernameCookie.Value
-		notes := listAllNotesSQL(username)
+		//Connect to db
+		db := connectDatabase()
+		defer db.Close()
+		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+		var note Note
+		rows, err := stmt.Query(username)
+		for rows.Next() {
+			err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+			if err != nil {
+				log.Fatal(err)
+			}
+			notes = append(notes, note)
 
+		}
 		fmt.Println(notes)
 		//just sending it straight to frontend for testing
 		w.Header().Set("Content-Type", "application/json")
@@ -190,8 +291,28 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 //============================================LIST ALL REGISTERED USERS=====================
 //This function creates a list of all registerd users
 func listAllUses(loggedInUser string) []string {
+	//Not 100% sure
+	//return listAllUsersSQL(loggedInUser)
+	var users []string
+	var username string
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
 
-	return listAllUsersSQL(loggedInUser)
+	//Send query to the db
+	rows, err := db.Query("SELECT user_name FROM _user;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&username)
+		//Make sure we dont add logged in user to recommended
+		if loggedInUser != username {
+			users = append(users, username)
+		}
+	}
+
+	return users
 }
 
 //=========================USER LOGOUT======================================================
@@ -237,6 +358,57 @@ func allNotes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//==================GET ALL OWNED NOTES=====================================
+func getOwndedNotes(username string) (notes []Note) {
+	//Connect to Database
+	db := connectDatabase()
+	defer db.Close()
+	var note Note
+	//Prepare Statment
+	stmt, err := db.Prepare("SELECT title, body, date_created FROM _note WHERE note_owner=$1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		notes = append(notes, note)
+	}
+
+	return notes
+}
+
+//==========GET NOTES That you are only appart of====================
+//Still need to do
+func getPartOfNotes(username string) (notes []Note) {
+	db := connectDatabase()
+	defer db.Close()
+
+	var note Note
+	//prepare statement
+	stmt, err := db.Prepare(`
+	SELECT title, body, date_created FROM _note_privileges
+	JOIN _note
+	ON _note.note_id = _note_privileges.note_id
+	WHERE _note_privileges.user_name = $1;
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err := stmt.Query(username)
+	//scan each row of the query and add it to the notes slice
+	for rows.Next() {
+		rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		log.Println("Notes part of:" + note.NoteTitle) //for testing
+		notes = append(notes, note)
+	}
+	return notes
+}
+
 //==============SEARCH FOR A NOTE WITH PARTIAL TEXT SQL==============================
 func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
@@ -255,10 +427,4 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Not Logged in!")
 	}
 
-}
-
-//==========GET NOTES That you are only appart of====================
-//Still need to do
-func getPartOfNotes(username string) (notes []Note) {
-	return notes
 }

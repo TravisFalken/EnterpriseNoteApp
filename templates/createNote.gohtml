@@ -12,6 +12,27 @@
             <form action="/addNote" method="POST" id="createNoteForm">
                 <label for="title">Title</label>
                 <input type="text" name="title" id="title" placeholder="Please enter the title of the note">
+                <div class="users">
+                    
+                        <div class="userSelect">
+                            <select name="users" multiple>
+                                {{range .}}
+                                    <option value="{{.}}">{{.}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                    {{range .}}
+                        <div class="card">
+                            <input type="checkbox" name="includedCheckbox_{{.}}">
+                            <label for="includedCheckbox">Include</label>
+                            <p>{{.}}</p>
+                            <input type="checkbox" name="readCheckbox_{{.}}" value="read">
+                            <label for="readCheckbox">View Note</label>
+                            <input type="checkbox" name="writeCheckbox_{{.}}">
+                            <label for="writeCheckbox">Edit Note</label>
+                        </div>
+                    {{end}}
+                </div>
                 <br><br>
                 <label for="body">Body</label>
             
