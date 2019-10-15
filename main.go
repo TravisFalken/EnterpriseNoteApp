@@ -11,27 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Note struct {
-	NoteID      int    `json: "note_id"`
-	NoteTitle   string `json:"title"`
-	NoteBody    string `json: "note_body"`
-	CreatedDate string `json: "date_created"`
-	NoteOwner   string `json:"note_owner"`
-}
 
-type Notes struct {
-	OwnedNotes  []Note
-	PartOfNotes []Note
-}
-
-type User struct {
-	UserName   string `json:"user_name"`
-	Password   string `json:"password"` //This will normally be encripted
-	Email      string `json:"email"`
-	GivenName  string `json:"given_name"`
-	FamilyName string `json:"family_name"`
-	SessionID  string `json:"session_id"`
-}
 
 var tpl *template.Template
 
@@ -68,70 +48,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
-//Set up database
-func setupDB() {
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
 
-	/*
-		test := `DROP TABLE IF EXISTS Client;
-				CREATE TABLE Client(
-				Year integer,
-				Measure character varying(50),
-				Technology character varying(50),
-				Value integer,
-				ValueUnit character varying(50),
-				ValueLabel character varying(50),
-				NullReason character varying(50)
-			);`
-	*/
-
-	_note_privilegesQuery := `CREATE TABLE _note_privileges( -- added underscore here to keep naming convention
-				note_privileges_id integer PRIMARY KEY NOT NULL,
-				note_id integer,
-				user_name character varying(50),
-				read CHAR(1), -- t for true  f for false
-				write CHAR(1) -- t for true  f for false
-			);`
-
-	userTableQuery := `DROP TABLE IF EXISTS _user CASCADE;
-				CREATE TABLE _user(
-					user_name  character varying(50) NOT NULL PRIMARY KEY,
-					password character varying(50) NOT NULL,
-					email character varying(250) NOT NULL,
-					given_name character varying(50) NOT NULL,
-					family_name character varying(50) NOT NULL,
-					session_id character varying(250)
-				);`
-	noteTableQuery := `DROP TABLE IF EXISTS _Note;
-				CREATE TABLE _Note(
-				note_id serial PRIMARY KEY,
-				title character varying(50) NOT NULL,
-				body TEXT NOT NULL,
-				date_created character varying(250) NOT NULL,
-				note_owner character varying(50) NOT NULL,
-				FOREIGN KEY(note_owner) REFERENCES _user(user_name)
-			);`
-
-	/*
-		_, err = db.Exec(userTableQuery)
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-	_, err := db.Exec(userTableQuery)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(noteTableQuery)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(_note_privilegesQuery)
-}
 
 //This method runs the first time the user trys to access the webapp
 //Looking for a better function name XD
