@@ -31,7 +31,6 @@ var user User //For testing dummy data
 
 func main() {
 
-	//Ask john if I should make db global so I do not have to connect to it everytime I query
 	user.UserName = "TravisFalken"
 	user.Email = "travis.falkenberg141@gmail.com"
 	user.FamilyName = "Falkenberg"
@@ -39,7 +38,6 @@ func main() {
 	user.Password = "1234"
 
 	fmt.Println(note)
-	//setupDB()
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/createUser", addUser).Methods("POST")
@@ -50,4 +48,5 @@ func main() {
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
 	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
+
 }
