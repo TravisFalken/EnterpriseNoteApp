@@ -89,7 +89,7 @@ ALTER TABLE "_group_user" ADD
 
 INSERT INTO "_user" (given_name,family_name,user_name,password,email) 
 VALUES 
-('Travis', 'Falkenberg', 'Trav3', '1234', 'fakeemail1@gmail.com'),
+('Travis', 'Falkenberg', 'Trav3', '1234', 'travis.falkenberg141@gmail.com'),
 ('Mohammad','Vaughn','Vaughn1','password', 'fakeemail1@gmai2.com'),
 ('Curran','Cochran','Curran85','password', 'fakeemail1@gmai3.com'),
 ('Yoshio','Bernard','BernardsProfile','password', 'fakeemail1@gmai4.com'),

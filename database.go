@@ -45,19 +45,19 @@ func userNameExists(username string) bool {
 }
 
 //===================Validate Password=============================
-func validatePass(password string) bool {
+func validatePass(password string, username string) bool {
 	var pass string
 	//Connect to db
 	db := connectDatabase()
 	defer db.Close()
 
 	//prepare statement to check for password
-	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1;")
+	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1 AND user_name = $2;")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = stmt.QueryRow(password).Scan(&pass)
+	err = stmt.QueryRow(password, username).Scan(&pass)
 	//if nothing is returned
 	if err == sql.ErrNoRows {
 		//password does not match
@@ -219,5 +219,28 @@ func partialTextSearchSQL(bodyText string, username string) []Note {
 		notes = append(notes, note)
 
 	}
+	return notes
+}
+
+//==================GET ALL OWNED NOTES=====================================
+func getOwndedNotes(username string) (notes []Note) {
+	//Connect to Database
+	db := connectDatabase()
+	defer db.Close()
+	var note Note
+	//Prepare Statment
+	stmt, err := db.Prepare("SELECT title, body, date_created FROM _note WHERE note_owner=$1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		notes = append(notes, note)
+	}
+
 	return notes
 }
