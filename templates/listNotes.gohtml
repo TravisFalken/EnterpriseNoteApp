@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <header>
+            <title>All of your Notes</title>
+            <h1>All of your Notes</h1>
+        </header>
+        <main>
+            <section id="notesOwned">
+                <h3>Notes You Own</h3>
+                <div class="container">
+                {{with .OwnedNotes}}
+                
+                    {{if not .}}
+                        
+                        <h3>You do not own any notes</h3>
+                        
+                    {{else}}   
+                        {{range .}}
+                        <div class="pannel">
+                            <p>test</p>
+                            <h3>{{.NoteTitle}}</h3>
+                            <p>{{.NoteBody}}</p>
+                            <p>{{.CreatedDate}}</p>
+                            
+                        </div>
+                        {{end}}
+                    {{end}}
+                {{end}}
+                </div>
+            </section>
+            <h3>Notes you are Apart of</h3>
+            <section id="notesPartOf">
+
+            </section>
+        </main>
+    </body>
+</html>
+

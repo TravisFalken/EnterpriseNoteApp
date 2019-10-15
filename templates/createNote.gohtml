@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <header>
+            <title>Create Note</title>
+            <h1>Create Note</h1>
+        </header>
+        <main>
+            <form action="/addNote" method="POST" id="createNoteForm">
+                <label for="title">Title</label>
+                <input type="text" name="title" id="title" placeholder="Please enter the title of the note">
+                <br><br>
+                <label for="body">Body</label>
+            
+                <br><br>
+            </form>
+            <textarea rows="4" cols="50" name="body" form="createNoteForm">Enter the body of the note</textarea>
+            <br>
+            <button type="submit" form="createNoteForm">Create</button>
+            <button type="button" onclick="window.location.href='/home';">Cancel</button>
+        </main>
+
+    </body>
+</html>
