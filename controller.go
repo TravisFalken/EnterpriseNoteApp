@@ -390,7 +390,7 @@ func getPartOfNotes(username string) (notes []Note) {
 	var note Note
 	//prepare statement
 	stmt, err := db.Prepare(`
-	SELECT title, body, date_created FROM _note_privileges
+	SELECT title, body, date_created, note_owner FROM _note_privileges
 	JOIN _note
 	ON _note.note_id = _note_privileges.note_id
 	WHERE _note_privileges.user_name = $1;
@@ -402,7 +402,7 @@ func getPartOfNotes(username string) (notes []Note) {
 	rows, err := stmt.Query(username)
 	//scan each row of the query and add it to the notes slice
 	for rows.Next() {
-		rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		rows.Scan(&note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 		log.Println("Notes part of:" + note.NoteTitle) //for testing
 		notes = append(notes, note)
 	}
@@ -434,7 +434,9 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 
 	//get the id of the note the user wants to delete
-	noteid := mux.Vars(r)["id"]
-	username := getUserName(r)
-	return deleteSpecificNote(noteid, username)
+	/*
+		noteid := mux.Vars(r)["id"]
+		username := getUserName(r)
+	*/
+	return deleteSpecificNote(r)
 }
