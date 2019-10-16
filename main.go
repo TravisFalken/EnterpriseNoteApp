@@ -36,5 +36,7 @@ func main() {
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("DELETE")
 	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
+	//router.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
+	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

@@ -1,48 +1,67 @@
 <!DOCTYPE html>
 <html>
-    <head>
 
-    </head>
-    <body>
-        <header>
-            <title>Create Note</title>
-            <h1>Create Note</h1>
-        </header>
-        <main>
-            <form action="/addNote" method="POST" id="createNoteForm">
-                <label for="title">Title</label>
-                <input type="text" name="title" id="title" placeholder="Please enter the title of the note">
-                <div class="users">
-                    
-                        <div class="userSelect">
-                            <select name="users" multiple>
-                                {{range .}}
-                                    <option value="{{.}}">{{.}}</option>
-                                {{end}}
-                            </select>
-                        </div>
-                    {{range .}}
-                        <div class="card">
-                            <input type="checkbox" name="includedCheckbox_{{.}}">
-                            <label for="includedCheckbox">Include</label>
-                            <p>{{.}}</p>
-                            <input type="checkbox" name="readCheckbox_{{.}}" value="read">
-                            <label for="readCheckbox">View Note</label>
-                            <input type="checkbox" name="writeCheckbox_{{.}}">
-                            <label for="writeCheckbox">Edit Note</label>
-                        </div>
-                    {{end}}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--Bootstrap css link-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--javascript for bootstrap-->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <!--local css-->
+    <link href="/css/style.css" type="text/css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <title>Create Note</title>
+        <h1>Create Note</h1>
+    </header>
+    <main>
+        <form action="/addNote" method="POST" id="createNoteForm">
+            <label for="title">Title</label>
+            <input type="text" name="title" id="title" placeholder="Please enter the title of the note">
+            <div class="users">
+
+                <div class="userSelect">
+                    <select name="users" multiple>
+                        {{range .}}
+                        <option value="{{.}}">{{.}}</option>
+                        {{end}}
+                    </select>
                 </div>
-                <br><br>
-                <label for="body">Body</label>
-            
-                <br><br>
-            </form>
-            <textarea rows="4" cols="50" name="body" form="createNoteForm">Enter the body of the note</textarea>
-            <br>
-            <button type="submit" form="createNoteForm">Create</button>
-            <button type="button" onclick="window.location.href='/home';">Cancel</button>
-        </main>
+                {{range .}}
+                <div class="card">
+                    <input type="checkbox" name="includedCheckbox_{{.}}">
+                    <label for="includedCheckbox">Include</label>
+                    <p>{{.}}</p>
+                    <input type="checkbox" name="readCheckbox_{{.}}" value="read">
+                    <label for="readCheckbox">View Note</label>
+                    <input type="checkbox" name="writeCheckbox_{{.}}">
+                    <label for="writeCheckbox">Edit Note</label>
+                </div>
+                {{end}}
+            </div>
+            <br><br>
+            <label for="body">Body</label>
 
-    </body>
+            <br><br>
+        </form>
+        <textarea rows="4" cols="50" name="body" form="createNoteForm">Enter the body of the note</textarea>
+        <br>
+        <button type="submit" form="createNoteForm">Create</button>
+        <button type="button" onclick="window.location.href='/home';">Cancel</button>
+    </main>
+
+</body>
+
 </html>

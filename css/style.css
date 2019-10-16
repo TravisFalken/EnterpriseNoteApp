@@ -1,0 +1,25 @@
+/*
+nav ul {
+    list-style-type: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background-color: grey;
+}
+
+nav li {
+    float: left;
+}
+
+nav li a {
+    display: block;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    
+}
+*/
+
+.card.text-center {
+    margin: 2em 0;
+}
