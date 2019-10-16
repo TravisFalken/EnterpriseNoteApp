@@ -428,3 +428,13 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+//===================Delete Specific note=============================
+
+func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
+
+	//get the id of the note the user wants to delete
+	noteid := mux.Vars(r)["id"]
+	username := getUserName(r)
+	return deleteSpecificNote(noteid, username)
+}
