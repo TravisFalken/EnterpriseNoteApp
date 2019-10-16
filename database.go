@@ -207,7 +207,7 @@ func deleteSpecificNoteSQL(noteid string, username string) (noteDeleted bool) {
 	defer db.Close()
 
 	//get the actually username out of the cookie
-	username := getUserName(r)
+
 	stmt, err := db.Prepare("DELETE FROM _note WHERE note_owner=$1 AND note_id=$2;")
 	if err != nil {
 		log.Fatal(err)
