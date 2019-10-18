@@ -219,28 +219,33 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		}
 		users := r.Form["user"]
 		for _, user := range users {
+			//get included checkbox value
+			includedCheckbox := r.FormValue("includedCheckbox_" + user)
+			//Check that the user has been included
+			if includedCheckbox != "" {
+				log.Println("User: " + user)
+				readCheckbox := r.FormValue("readCheckbox_" + user)
+				writeCheckbox := r.FormValue("writeCheckbox_" + user)
+				//Check that user has read privlages
+				if readCheckbox != "" {
+					read = "t"
+				} else {
+					read = "f"
+				}
+				//Check that the user has write privlages
+				if writeCheckbox != "" {
+					write = "t"
+				} else {
+					write = "f"
+				}
 
-			log.Println("User: " + user)
-			readCheckbox := r.FormValue("readCheckbox_" + user)
-			writeCheckbox := r.FormValue("writeCheckbox_" + user)
-			//Check that user has read privlages
-			if readCheckbox != "" {
-				read = "t"
-			} else {
-				read = "f"
-			}
-			//Check that the user has write privlages
-			if writeCheckbox != "" {
-				write = "t"
-			} else {
-				write = "f"
+				_, err = stmt.Exec(noteId, user, read, write)
+				if err != nil {
+					log.Fatal(err)
+				}
+				log.Println("Read:" + read) //For testing
 			}
 
-			_, err = stmt.Exec(noteId, user, read, write)
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Println("Read:" + read) //For testing
 		}
 		log.Println(users) //for testing
 		fmt.Fprintf(w, "New Note Added")
