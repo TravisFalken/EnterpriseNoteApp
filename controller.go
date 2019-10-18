@@ -217,7 +217,7 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		users := r.Form["users"]
+		users := r.Form["user"]
 		for _, user := range users {
 
 			log.Println("User: " + user)
@@ -411,20 +411,22 @@ func getPartOfNotes(username string) (notes []Note) {
 
 //==============SEARCH FOR A NOTE WITH PARTIAL TEXT SQL==============================
 func searchNotePartial(w http.ResponseWriter, r *http.Request) {
+	var notes Notes
 	//Check if user is still online
 	if userStillLoggedIn(r) {
 
-		bodyText := mux.Vars(r)["id"]
-		username := getUserName(r)
-		notes := partialTextSearchSQL(bodyText, username)
-
+		bodyText := mux.Vars(r)["search"]
+		log.Println("Partial String:" + bodyText) //For testing
+		//gets notes owned that match the pattern
+		notes.OwnedNotes = partialSeachOwnedTitle(bodyText, r)
+		//get notes part of that match the pattern
+		notes.PartOfNotes = partialSearchPartOfTitle(bodyText, r)
 		fmt.Println(notes)
-		//just sending it straight to frontend for testing
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(notes)
+		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
 		//User is not logged in
 	} else {
-		fmt.Fprintf(w, "Not Logged in!")
+		//Redirect to splash page
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
 }

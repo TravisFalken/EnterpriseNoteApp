@@ -19,6 +19,8 @@
         crossorigin="anonymous"></script>
     <!--local css-->
     <link href="/css/style.css" type="text/css" rel="stylesheet">
+    <!--Server js-->
+    <script src="/javascript/script.js"></script>
 </head>
 
 <body>
@@ -33,23 +35,61 @@
             <div class="users">
 
                 <div class="userSelect">
-                    <select name="users" multiple>
+                    <!--
+                    <select name="users">
                         {{range .}}
-                        <option value="{{.}}">{{.}}</option>
+                        <option value="{{.}}">{{.}}<input type="checkbox" value="test"></option>
                         {{end}}
                     </select>
+                -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
+                        Add Participants
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog"
+                        aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Add Users</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    {{range .}}
+                                    <div class="card">
+                                        <h5 class="card-header">{{.}}</h5>
+                                        <div class="card-body">
+                                            <div class="modal_checkBoxes">
+                                                <input type="hidden" name="user" value="{{.}}">
+                                                <input type="checkbox" name="includedCheckbox_{{.}}">
+                                                <label for="includedCheckbox">Include</label>
+                                                <div class="dropdown-divider"></div>
+                                                <div class="dropdown-divider"></div>
+                                                <input type="checkbox" name="readCheckbox_{{.}}" value="read">
+                                                <label for="readCheckbox">View Note</label>
+                                                <div class="dropdown-divider"></div>
+                                                <div class="dropdown-divider"></div>
+                                                <input type="checkbox" name="writeCheckbox_{{.}}">
+                                                <label for="writeCheckbox">Edit Note</label>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                    {{end}}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" onclick="saveUserModal()" class="btn btn-primary" id="modalSave_btn">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {{range .}}
-                <div class="card">
-                    <input type="checkbox" name="includedCheckbox_{{.}}">
-                    <label for="includedCheckbox">Include</label>
-                    <p>{{.}}</p>
-                    <input type="checkbox" name="readCheckbox_{{.}}" value="read">
-                    <label for="readCheckbox">View Note</label>
-                    <input type="checkbox" name="writeCheckbox_{{.}}">
-                    <label for="writeCheckbox">Edit Note</label>
-                </div>
-                {{end}}
             </div>
             <br><br>
             <label for="body">Body</label>

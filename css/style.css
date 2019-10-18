@@ -23,3 +23,12 @@ nav li a {
 .card.text-center {
     margin: 2em 0;
 }
+
+.card {
+    margin: 1em 0;
+}
+
+.modal_checkBoxes{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}

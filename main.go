@@ -35,7 +35,7 @@ func main() {
 	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("GET") //Changed Method from delete to Get because browsers don't support delete method
-	router.HandleFunc("/searchNotes/{id}", searchNotePartial).Methods("GET")
+	router.HandleFunc("/searchNotes", searchNotePartial).Queries("search", "{search}").Methods("GET")
 	//router.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
 	router.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("./javascript"))))
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))

@@ -19,8 +19,9 @@
         crossorigin="anonymous"></script>
     <!--jQuery script for changing http method-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <!--local css-->
+    <!--Server css-->
     <link href="/css/style.css" type="text/css" rel="stylesheet">
+    <!--Server JS-->
     <script src="/javascript/script.js"></script>
 </head>
 
@@ -55,8 +56,8 @@
                         </div>
                     </li>
                 </ul>
-                <form class="form-inline my-2 my-lg-0">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <form class="form-inline my-2 my-lg-0" method="GET" action="/searchNotes">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" name="search" aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
             </div>

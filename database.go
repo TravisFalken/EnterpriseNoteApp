@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net/http"
 
 	_ "github.com/lib/pq"
 )
@@ -170,9 +171,9 @@ func listAllUsersSQL(loggedInUser string) []string {
 	return users
 }
 
-//===================Partial Text Search=============================
+//===================Partial Text Search in Body=============================
 
-func partialTextSearchSQL(bodyText string, username string) []Note {
+func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	var notes []Note
 	//Connect to db
 	db := connectDatabase()
@@ -197,6 +198,64 @@ func partialTextSearchSQL(bodyText string, username string) []Note {
 
 	}
 	return notes
+}
+
+//==============Search owned notes using partial text based on the notes title=================
+func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []Note) {
+	//get username
+	username := getUserName(r)
+	//Connect to database
+
+	db := connectDatabase()
+	defer db.Close()
+	searchText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note WHERE _note.title ~ $2 AND _note.note_owner = $1;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var note Note
+	rows, err := stmt.Query(username, searchText)
+	if err != nil {
+		log.Panic(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		if err != nil {
+			log.Panic(err)
+		}
+		ownedNotes = append(ownedNotes, note)
+	}
+	return ownedNotes
+}
+
+//=============Partial search notes you are appart of by their title=================
+func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []Note) {
+	//get username
+	username := getUserName(r)
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	titleText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~ $2 AND _note_privileges.user_name = $1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Got HERE: Part of title") // for testing
+	var note Note
+	rows, err := stmt.Query(username, titleText)
+	if err != nil {
+		log.Panic(err)
+		return partOfNotes
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		if err != nil {
+			log.Panic(err)
+		}
+		partOfNotes = append(partOfNotes, note)
+	}
+
+	return partOfNotes
 }
 
 //===================Delete Specific note=============================
