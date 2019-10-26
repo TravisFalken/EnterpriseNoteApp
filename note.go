@@ -6,4 +6,6 @@ type Note struct {
 	NoteBody    string `json: "noteBody"`
 	CreatedDate string `json: "createdDate"`
 	NoteOwner   string `json:"noteOwner"`
+	Read        string `json:"read"`  //for when user is part of note
+	Write       string `json:"write"` //for when user is part of note
 }

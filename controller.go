@@ -60,6 +60,32 @@ func createNote(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//====================EDIT NOTE PAGE======================================
+func editNote(w http.ResponseWriter, r *http.Request) {
+	//Make sure user is still logged in
+	if userStillLoggedIn(r) {
+		//validate that user can actually read the note
+		if readPermissions(r) || noteOwner(r) {
+			var note Note
+			//get note if user is part of
+			if readPermissions(r) {
+				note = getPartOfNote(r)
+				//get note if user us owner
+			} else {
+				note = getOwnedNote(r)
+			}
+			//get the note
+			log.Println("Edit Note: " + note.NoteTitle + note.Write + "Note Owner: " + note.NoteOwner) // For testing
+			tpl.ExecuteTemplate(w, "editNote.gohtml", note)
+		} else {
+			http.Redirect(w, r, "/listNotes", http.StatusSeeOther)
+		}
+
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
 //=========================Checks if user login details are correct=========================================
 func login(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
@@ -224,14 +250,8 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 			//Check that the user has been included
 			if includedCheckbox != "" {
 				log.Println("User: " + user)
-				readCheckbox := r.FormValue("readCheckbox_" + user)
+				read = "t"
 				writeCheckbox := r.FormValue("writeCheckbox_" + user)
-				//Check that user has read privlages
-				if readCheckbox != "" {
-					read = "t"
-				} else {
-					read = "f"
-				}
 				//Check that the user has write privlages
 				if writeCheckbox != "" {
 					write = "t"

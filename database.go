@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	_ "github.com/lib/pq"
 )
 
@@ -208,8 +210,8 @@ func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []No
 
 	db := connectDatabase()
 	defer db.Close()
-	searchText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note WHERE _note.title ~ $2 AND _note.note_owner = $1;")
+	//searchText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note WHERE _note.title ~* $2 AND _note.note_owner = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -235,8 +237,8 @@ func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	titleText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~ $2 AND _note_privileges.user_name = $1")
+	//titleText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -278,4 +280,147 @@ func deleteSpecificNoteSQL(noteid string, username string) (noteDeleted bool) {
 		return true
 	}
 	return false
+}
+
+//check if user has read permissions
+func readPermissions(r *http.Request) (readPremission bool) {
+	username := getUserName(r)
+	var read string
+	//Get note id from http
+	noteid := mux.Vars(r)["id"]
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	stmt, err := db.Prepare("SELECT read FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
+	//if no rows were returned
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(username, noteid).Scan(&read)
+	if err != nil {
+		readPremission = false
+		return readPremission
+	}
+	if read == "t" {
+		readPremission = true
+		return readPremission
+	}
+
+	readPremission = false
+	return readPremission
+
+}
+
+//Check if user has write permissions
+func checkWritePermissions(r *http.Request) (readPermission bool) {
+	username := getUserName(r)
+	var write string
+
+	noteid := mux.Vars(r)["id"]
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	//prepare statement
+	stmt, err := db.Prepare("SELECT write FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(username, noteid).Scan(&write)
+	if err == sql.ErrNoRows {
+		readPermission = false
+		return readPermission
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+
+	//Check the permission
+	if write == "t" {
+		readPermission = true
+		return readPermission
+	}
+
+	readPermission = false
+	return readPermission
+
+}
+
+//Check if user is a owner of a note
+func noteOwner(r *http.Request) bool {
+	var owner string
+	db := connectDatabase()
+	defer db.Close()
+	username := getUserName(r)
+	noteID := mux.Vars(r)["id"]
+
+	stmt, err := db.Prepare("SELECT note_owner FROM _note WHERE note_owner = $1 AND note_id = $2;")
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(username, noteID).Scan(&owner)
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return true
+
+}
+
+//get note based on note id and user permissions
+func getPartOfNote(r *http.Request) (note Note) {
+	//Check to see if user has read permission or is note owner
+	if readPermissions(r) || noteOwner(r) {
+		//Connect to database
+		db := connectDatabase()
+		defer db.Close()
+		//Get username
+		username := getUserName(r)
+		noteid := mux.Vars(r)["id"]
+		//prepare statment
+		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created, read, write FROM _note JOIN _note_privileges ON _note.note_id = _note_privileges.note_id WHERE _note.note_id = $2 AND user_name = $1")
+		if err != nil {
+			log.Panic(err)
+		}
+		err = stmt.QueryRow(username, noteid).Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.Read, &note.Write)
+		if err == sql.ErrNoRows {
+			return note
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return note
+}
+
+func getOwnedNote(r *http.Request) (note Note) {
+	if noteOwner(r) {
+		//Connect to database
+		db := connectDatabase()
+		defer db.Close()
+		//get username
+		username := getUserName(r)
+		noteid := mux.Vars(r)["id"]
+		//prepare statment
+		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created FROM _note WHERE note_owner = $1 AND note_id = $2;")
+		if err != nil {
+			log.Panic(err)
+			return note
+		}
+		err = stmt.QueryRow(username, noteid).Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		if err == sql.ErrNoRows {
+			return note
+		}
+		if err != nil {
+			log.Panic(err)
+			return note
+		}
+
+	}
+	return note
 }

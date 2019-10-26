@@ -9,3 +9,12 @@ function saveUserModal() {
     $('#addUserModal').modal('hide');
 
 }
+
+//Something weird
+function editNotePage(noteID){
+    if(noteID > 0){
+        window.location.href = "/editNote/" +noteID;
+    }
+   
+}
+

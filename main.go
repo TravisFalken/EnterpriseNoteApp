@@ -30,6 +30,8 @@ func main() {
 	router.HandleFunc("/createNote", createNote).Methods("GET") //For the html page
 	router.HandleFunc("/addNote", addNote).Methods("POST")
 	router.HandleFunc("/signUp", signUp).Methods("GET")
+	router.HandleFunc("/editNote/{id}", editNote).Methods("GET") // For displaying edit note html page
+	//router.HandleFunc("/editNote", updateNote).Methods("POST") //For updating edit note
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/listNotes", allNotes).Methods("GET")
 	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
@@ -37,7 +39,7 @@ func main() {
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("GET") //Changed Method from delete to Get because browsers don't support delete method
 	router.HandleFunc("/searchNotes", searchNotePartial).Queries("search", "{search}").Methods("GET")
 	//router.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
-	router.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("./javascript"))))
-	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
+	router.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("./javascript")))) // Handler for serving files within the javascript folder
+	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))                      //handler for serving files within the css folder
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
