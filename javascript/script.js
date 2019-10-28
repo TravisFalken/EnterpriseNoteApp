@@ -18,3 +18,22 @@ function editNotePage(noteID){
    
 }
 
+function updateNote(noteID){
+    //var form = $('#editForm');
+    var form = $('#editForm');
+    //var formData = new FormData(form);
+        if(noteID > 0){
+            window.alert("Note Has been updated!");
+            
+            $.ajax({
+                url: '/updateNote/' + noteID,
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                date: form.serialize()
+            });
+        }
+        
+    
+}
+

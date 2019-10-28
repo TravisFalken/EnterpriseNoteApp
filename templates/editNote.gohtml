@@ -17,6 +17,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+    <!--jQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <!--local css-->
     <link href="/css/style.css" type="text/css" rel="stylesheet">
     <!--Server js-->
@@ -79,7 +81,7 @@
                 {{end}}
             </div>
             <div class="card-body">
-                <form id="editForm" action="">
+                <form id="editForm" action="/updateNote/{{.NoteID}}" method="POST">
                     <label>Body</label>
                     {{if .Write}}
                         {{if eq .Write "t"}}
@@ -92,7 +94,7 @@
                     {{else}}
                         <textarea name="body">{{.NoteBody}}</textarea>
                         <button type="button" id="cancelBtn">Cancel</button>
-                        <button type="submit" onclick="updateNote({{.NoteID}})" id="updateBtn" form="editForm">Update</button>
+                        <button type="submit" id="updateBtn" form="editForm">Update</button>
                         <button type="button" id="addPrivileges">Add Participants</button>
                         <button type="button" id="editPrivileges">Edit Privileges</button>
                         

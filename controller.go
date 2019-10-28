@@ -467,3 +467,30 @@ func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 
 	return deleteSpecificNoteSQL(noteid, username)
 }
+
+//===================Update a Note=======================
+
+func updateNote(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Entered update note") // for testing
+	if userStillLoggedIn(r) {
+		//validate if note owner
+		if noteOwner(r) {
+			//update note
+			if updateOwnedNote(r) {
+				http.Redirect(w, r, "/listNotes", http.StatusSeeOther)
+			} else {
+				http.Error(w, "Could not update Note!", http.StatusExpectationFailed)
+			}
+		}
+		//validate if has write access
+		if checkWritePermissions(r) {
+			if updatePartOfNote(r) {
+				http.Redirect(w, r, "/listNotes", http.StatusSeeOther)
+			} else {
+				http.Error(w, "Could not update Note!", http.StatusExpectationFailed)
+			}
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
