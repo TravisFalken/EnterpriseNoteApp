@@ -4,7 +4,7 @@
 
 ## Deploy
 
-to deploy as dev
+to deploy as dev through Docker CLI
 
 Client standalone:
 
