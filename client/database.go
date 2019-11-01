@@ -12,8 +12,10 @@ import (
 )
 
 func connectDatabase() (db *sql.DB) {
+	connString := "host=db port=5432 user=postgres password=password dbname=noteBookApp sslmode=disable"
+
 	//Open db connection
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=noteBookApp sslmode=disable")
+	db, err := sql.Open("postgres", connString)
 
 	if err != nil {
 		log.Panic(err)
