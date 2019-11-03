@@ -23,8 +23,6 @@ func main() {
 
 	fmt.Println(note)
 
-	setUpDB()
-
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", index).Methods("GET")
 	router.HandleFunc("/home", home).Methods("GET")
