@@ -37,7 +37,7 @@ DB conn string is not correct, trying to find error
 
 ---
 
-### Deploy as exe
+### Deploy as local exe
 
 1. A PostgreSQL database must be created called ***noteBookApp***
 
