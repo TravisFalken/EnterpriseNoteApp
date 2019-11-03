@@ -65,62 +65,69 @@
         <h1>All of your Notes</h1>
     </header>
     <main>
-        <section id="notesOwned">
-            <h3>Notes You Own</h3>
-            <div class="container">
-                {{with .OwnedNotes}}
-
-                {{if not .}}
-
-                <h3>You do not own any notes</h3>
-
-                {{else}}
-                {{range .}}
-                <div class="card text-center">
-                    <div class="card-header">
-                        Note Owner: You
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{.NoteTitle}}</h5>
-                        <p class="card-text">{{.NoteBody}}</p>
-                        <a href="#" class="btn btn-primary">View Note</a>
-                        <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">Edit Note</a>
-                        <a href="#" class="btn btn-primary" onclick="deleteNote({{.NoteID}})">Delete Note</a>
-                    </div>
-                    <div class="card-footer text-muted">
-                        <p>Date Created: {{.CreatedDate}}</p>
-                    </div>
-                </div>
-
-                {{end}}
-                {{end}}
-                {{end}}
-            </div>
-        </section>
-        <h3>Notes you are Apart of</h3>
         <div class="container">
-            <section id="notesPartOf">
-                {{with .PartOfNotes}}
-                {{range .}}
-                <p>test part of notes</p>
-                <div class="card text-center">
-                    <div class="card-header">
-                        Note Owner: {{.NoteOwner}}
+            <div class="row">
+                <div class="col-xs-12">
+                    <section id="notesOwned">
+                    <h3>Notes You Own</h3>
+                    <div class="container">
+                        {{with .OwnedNotes}}
+
+                        {{if not .}}
+
+                        <h3>You do not own any notes</h3>
+
+                        {{else}}
+                        {{range .}}
+                        <div class="card text-center">
+                            <div class="card-header">
+                                Note Owner: You
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{.NoteTitle}}</h5>
+                                <p class="card-text">{{.NoteBody}}</p>
+                                <a href="#" class="btn btn-primary">View Note</a>
+                                <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">Edit Note</a>
+                                <a href="#" class="btn btn-primary" onclick="deleteNote({{.NoteID}})">Delete Note</a>
+                            </div>
+                            <div class="card-footer text-muted">
+                                <p>Date Created: {{.CreatedDate}}</p>
+                            </div>
+                        </div>
+
+                        {{end}}
+                        {{end}}
+                        {{end}}
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{.NoteTitle}}</h5>
-                        <p class="card-text">{{.NoteBody}}</p>
-                        <a href="#" class="btn btn-primary">View Note</a>
-                        <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">Edit Note</a>
-                    </div>
-                    <div class="card-footer text-muted">
-                        <p>Date Created: {{.CreatedDate}}</p>
-                    </div>
+                </section>
+                <h3>Notes you are Apart of</h3>
+                <div class="container">
+                    <section id="notesPartOf">
+                        {{with .PartOfNotes}}
+                        {{range .}}
+                        <p>test part of notes</p>
+                        <div class="card text-center">
+                            <div class="card-header">
+                                Note Owner: {{.NoteOwner}}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{.NoteTitle}}</h5>
+                                <p class="card-text">{{.NoteBody}}</p>
+                                <a href="#" class="btn btn-primary">View Note</a>
+                                <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">Edit Note</a>
+                            </div>
+                            <div class="card-footer text-muted">
+                                <p>Date Created: {{.CreatedDate}}</p>
+                            </div>
+                        </div>
+                        {{end}}
+                        {{end}}
                 </div>
-                {{end}}
-                {{end}}
+                </section>
+                </div>
+            </div>
         </div>
-        </section>
+        
     </main>
 </body>
 

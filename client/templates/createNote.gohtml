@@ -29,73 +29,82 @@
         <h1>Create Note</h1>
     </header>
     <main>
-        <form action="/addNote" method="POST" id="createNoteForm">
-            <label for="title">Title</label>
-            <input type="text" name="title" id="title" placeholder="Please enter the title of the note">
-            <div class="users">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                  
+                    <form action="/addNote" method="POST" id="createNoteForm">
+                    <label for="title">Title</label>
+                    <input type="text" name="title" id="title" placeholder="Please enter the title of the note">
+                    <div class="users">
 
-                <div class="userSelect">
-                    <!--
-                    <select name="users">
-                        {{range .}}
-                        <option value="{{.}}">{{.}}<input type="checkbox" value="test"></option>
-                        {{end}}
-                    </select>
-                -->
-                    <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
-                        Add Participants
-                    </button>
+                        <div class="userSelect">
+                            <!--
+                            <select name="users">
+                                {{range .}}
+                                <option value="{{.}}">{{.}}<input type="checkbox" value="test"></option>
+                                {{end}}
+                            </select>
+                        -->
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
+                                Add Participants
+                            </button>
 
-                    <!-- Modal -->
-                    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog"
-                        aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Add Users</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    {{range .}}
-                                    <div class="card">
-                                        <h5 class="card-header">{{.}}</h5>
-                                        <div class="card-body">
-                                            <div class="modal_checkBoxes">
-                                                <input type="hidden" name="user" value="{{.}}">
-                                                <input type="checkbox" name="includedCheckbox_{{.}}">
-                                                <label for="includedCheckbox">Include</label>
-                                                <div class="dropdown-divider"></div>
-                                                <div class="dropdown-divider"></div>
-                                                <input type="checkbox" name="writeCheckbox_{{.}}">
-                                                <label for="writeCheckbox">Edit Note</label>
-                                            </div>
-
+                            <!-- Modal -->
+                            <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog"
+                                aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Add Users</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
                                         </div>
+                                        <div class="modal-body">
+                                            {{range .}}
+                                            <div class="card">
+                                                <h5 class="card-header">{{.}}</h5>
+                                                <div class="card-body">
+                                                    <div class="modal_checkBoxes">
+                                                        <input type="hidden" name="user" value="{{.}}">
+                                                        <input type="checkbox" name="includedCheckbox_{{.}}">
+                                                        <label for="includedCheckbox">Include</label>
+                                                        <div class="dropdown-divider"></div>
+                                                        <div class="dropdown-divider"></div>
+                                                        <input type="checkbox" name="writeCheckbox_{{.}}">
+                                                        <label for="writeCheckbox">Edit Note</label>
+                                                    </div>
 
+                                                </div>
+
+                                            </div>
+                                            {{end}}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="button" onclick="saveUserModal()" class="btn btn-primary" id="modalSave_btn">Save changes</button>
+                                        </div>
                                     </div>
-                                    {{end}}
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" onclick="saveUserModal()" class="btn btn-primary" id="modalSave_btn">Save changes</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <br><br>
+                    <label for="body">Body</label>
+
+                    <br><br>
+                    </form>
+                    <textarea rows="4" cols="50" name="body" form="createNoteForm">Enter the body of the note</textarea>
+                    <br>
+                    <button type="submit" form="createNoteForm">Create</button>
+                    <button type="button" onclick="window.location.href='/home';">Cancel</button>
+
                 </div>
             </div>
-            <br><br>
-            <label for="body">Body</label>
-
-            <br><br>
-        </form>
-        <textarea rows="4" cols="50" name="body" form="createNoteForm">Enter the body of the note</textarea>
-        <br>
-        <button type="submit" form="createNoteForm">Create</button>
-        <button type="button" onclick="window.location.href='/home';">Cancel</button>
+        </div>
+       
     </main>
 
 </body>
