@@ -1,6 +1,4 @@
-"# EnterpriseNoteApp" 
 
----
 
 ## Deploy
 
@@ -43,28 +41,28 @@ DB conn string is not correct, trying to find error
 
 1. A PostgreSQL database must be created called ***noteBookApp***
 
-[Imgur](https://i.imgur.com/nKJrXbr.png)
+![Imgur](https://i.imgur.com/nKJrXbr.png)
 
 2. Navigate to init.sql and copy all of the contents
 
-[Imgur](https://i.imgur.com/Efpk27p.png)
+![Imgur](https://i.imgur.com/Efpk27p.png)
 
 3. Create a query from Database created and copy SQL into query. Run query
 
-[Imgur](https://i.imgur.com/evZXSDG.png)
+![Imgur](https://i.imgur.com/evZXSDG.png)
 
 4. Navigate to client folder and run go build
 
-[Imgur](https://i.imgur.com/RZ8nA9P.png)
+![Imgur](https://i.imgur.com/RZ8nA9P.png)
 
 5. Navigate to containing folder and run client.exe
 
-[Imgur](https://i.imgur.com/iFGBZhk.png)
+![Imgur](https://i.imgur.com/iFGBZhk.png)
 
 6. Open your browser and navigate to localhost:8080
 
-[Imgur](https://i.imgur.com/AVBuTAQ.png)
+![Imgur](https://i.imgur.com/AVBuTAQ.png)
 
 7. Login using preset user. Or create your own. Preset user details, username: Trav3, password: 1234
 
-[Imgur](https://i.imgur.com/otfE0Qr.png)
+![Imgur](https://i.imgur.com/otfE0Qr.png)
