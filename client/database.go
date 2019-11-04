@@ -573,3 +573,51 @@ func updatePartOfNote(r *http.Request) (success bool) {
 	success = false
 	return success
 }
+
+func getOwnedNotesSQL(username string) (notes []Note) {
+	//Connect to Database
+	db := connectDatabase()
+	defer db.Close()
+	var note Note
+	//Prepare Statment
+	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created FROM _note WHERE note_owner=$1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		notes = append(notes, note)
+	}
+
+	return notes
+}
+
+func getPartOfNotesSQL(username string) (notes []Note) {
+	db := connectDatabase()
+	defer db.Close()
+
+	var note Note
+	//prepare statement
+	stmt, err := db.Prepare(`
+	SELECT _note.note_id, title, body, date_created, note_owner FROM _note_privileges
+	JOIN _note
+	ON _note.note_id = _note_privileges.note_id
+	WHERE _note_privileges.user_name = $1;
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err := stmt.Query(username)
+	//scan each row of the query and add it to the notes slice
+	for rows.Next() {
+		rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+		log.Println("Notes part of:" + note.NoteTitle) //for testing
+		notes = append(notes, note)
+	}
+	return notes
+}

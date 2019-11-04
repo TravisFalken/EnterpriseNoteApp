@@ -373,8 +373,8 @@ func allNotes(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		var username = getUserName(r)
 		var notes Notes
-		notes.OwnedNotes = getOwndedNotes(username)
-		notes.PartOfNotes = getPartOfNotes(username)
+		notes.OwnedNotes = getOwnedNotesSQL(username)
+		notes.PartOfNotes = getPartOfNotesSQL(username)
 		log.Println(notes) //For testing
 		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
 
@@ -382,69 +382,6 @@ func allNotes(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//==================GET ALL OWNED NOTES=====================================
-func getOwndedNotes(username string) (notes []Note) {
-	//Connect to Database
-	db := connectDatabase()
-	defer db.Close()
-	var note Note
-	//Prepare Statment
-	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created FROM _note WHERE note_owner=$1")
-	if err != nil {
-		log.Fatal(err)
-	}
-	rows, err := stmt.Query(username)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
-		notes = append(notes, note)
-	}
-
-	return notes
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//==========GET NOTES That you are only appart of====================
-//Still need to do
-func getPartOfNotes(username string) (notes []Note) {
-	db := connectDatabase()
-	defer db.Close()
-
-	var note Note
-	//prepare statement
-	stmt, err := db.Prepare(`
-	SELECT _note.note_id, title, body, date_created, note_owner FROM _note_privileges
-	JOIN _note
-	ON _note.note_id = _note_privileges.note_id
-	WHERE _note_privileges.user_name = $1;
-	`)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rows, err := stmt.Query(username)
-	//scan each row of the query and add it to the notes slice
-	for rows.Next() {
-		rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
-		log.Println("Notes part of:" + note.NoteTitle) //for testing
-		notes = append(notes, note)
-	}
-	return notes
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //==============SEARCH FOR A NOTE WITH PARTIAL TEXT SQL==============================
 func searchNotePartial(w http.ResponseWriter, r *http.Request) {
