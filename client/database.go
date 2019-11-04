@@ -2,11 +2,8 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 
 	_ "github.com/lib/pq"
 )
@@ -332,248 +329,6 @@ func deleteSpecificUserSQL(username string) (noteDeleted bool) {
 	return false
 }
 
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR HTTP TO CONTROLLER
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//check if user has read permissions
-func readPermissions(r *http.Request) (readPremission bool) {
-	username := getUserName(r)
-	var read string
-	//Get note id from http
-	noteid := mux.Vars(r)["id"]
-	//Connect to database
-	db := connectDatabase()
-	defer db.Close()
-	stmt, err := db.Prepare("SELECT read FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
-	//if no rows were returned
-	if err == sql.ErrNoRows {
-		return false
-	}
-	if err != nil {
-		log.Panic(err)
-	}
-	err = stmt.QueryRow(username, noteid).Scan(&read)
-	if err != nil {
-		readPremission = false
-		return readPremission
-	}
-	if read == "t" {
-		readPremission = true
-		return readPremission
-	}
-
-	readPremission = false
-	return readPremission
-
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR HTTP TO CONTROLLER
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//Check if user has write permissions
-func checkWritePermissions(r *http.Request) (writePermission bool) {
-	username := getUserName(r)
-	var write string
-
-	noteid := mux.Vars(r)["id"]
-	//Connect to database
-	db := connectDatabase()
-	defer db.Close()
-	//prepare statement
-	stmt, err := db.Prepare("SELECT write FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
-	if err != nil {
-		log.Panic(err)
-	}
-	err = stmt.QueryRow(username, noteid).Scan(&write)
-	if err == sql.ErrNoRows {
-		writePermission = false
-		return writePermission
-	}
-	if err != nil {
-		log.Panic(err)
-	}
-
-	//Check the permission
-	if write == "t" {
-		writePermission = true
-		return writePermission
-	}
-
-	writePermission = false
-	return writePermission
-
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR HTTP TO CONTROLLER
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//Check if user is a owner of a note
-func noteOwner(r *http.Request) bool {
-	var owner string
-	db := connectDatabase()
-	defer db.Close()
-	username := getUserName(r)
-	noteID := mux.Vars(r)["id"]
-
-	stmt, err := db.Prepare("SELECT note_owner FROM _note WHERE note_owner = $1 AND note_id = $2;")
-	if err != nil {
-		log.Panic(err)
-	}
-	err = stmt.QueryRow(username, noteID).Scan(&owner)
-	if err == sql.ErrNoRows {
-		return false
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return true
-
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR HTTP TO CONTROLLER
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//get note based on note id and user permissions
-func getPartOfNote(r *http.Request) (note Note) {
-	//Check to see if user has read permission or is note owner
-	if readPermissions(r) || noteOwner(r) {
-		//Connect to database
-		db := connectDatabase()
-		defer db.Close()
-		//Get username
-		username := getUserName(r)
-		noteid := mux.Vars(r)["id"]
-		//prepare statment
-		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created, read, write FROM _note JOIN _note_privileges ON _note.note_id = _note_privileges.note_id WHERE _note.note_id = $2 AND user_name = $1")
-		if err != nil {
-			log.Panic(err)
-		}
-		err = stmt.QueryRow(username, noteid).Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.Read, &note.Write)
-		if err == sql.ErrNoRows {
-			return note
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	return note
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR HTTP TO CONTROLLER
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-func getOwnedNote(r *http.Request) (note Note) {
-	if noteOwner(r) {
-		//Connect to database
-		db := connectDatabase()
-		defer db.Close()
-		//get username
-		username := getUserName(r)
-		noteid := mux.Vars(r)["id"]
-		//prepare statment
-		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created FROM _note WHERE note_owner = $1 AND note_id = $2;")
-		if err != nil {
-			log.Panic(err)
-			return note
-		}
-		err = stmt.QueryRow(username, noteid).Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
-		if err == sql.ErrNoRows {
-			return note
-		}
-		if err != nil {
-			log.Panic(err)
-			return note
-		}
-
-	}
-	return note
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR HTTP TO CONTROLLER
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-//Update note that you own
-func updateOwnedNote(r *http.Request) (success bool) {
-	//Connect to database
-	db := connectDatabase()
-	defer db.Close()
-	//get username
-	username := getUserName(r)
-	//get the note id that we need to update
-	noteid := mux.Vars(r)["id"]
-	//get values from form
-	title := r.FormValue("title")
-	body := r.FormValue("body")
-	fmt.Println("This is the title and body of update: " + title + " " + body) //for testing
-	stmt, err := db.Prepare("UPDATE _note SET title = $1, body = $2  WHERE note_id = $3 AND note_owner = $4;")
-	if err != nil {
-		log.Panic(err)
-	}
-
-	result, err := stmt.Exec(title, body, noteid, username)
-	if err != nil {
-		log.Panic(err)
-		success = false
-		return success
-	}
-	count, err := result.RowsAffected()
-	if err != nil {
-		log.Panic(err)
-		return false
-	}
-	if count > 0 {
-		return true
-	}
-	return false
-
-}
-
-//Update note you are part of
-func updatePartOfNote(r *http.Request) (success bool) {
-	if userStillLoggedIn(r) {
-		//Connect to database
-		db := connectDatabase()
-		defer db.Close()
-
-		//get username
-		//username := getUserName(r)
-		//get note id
-		noteID := mux.Vars(r)["id"]
-
-		//Get value from form
-		body := r.FormValue("body")
-		fmt.Println("This is the update body: " + body) //This is for testing
-		//prepare execution query
-		stmt, err := db.Prepare("UPDATE _note SET body = $1 WHERE note_id = $2")
-		result, err := stmt.Exec(body, noteID)
-		if err != nil {
-			log.Panic(err)
-			success = false
-			return success
-		}
-		//validate that update worked
-		count, err := result.RowsAffected()
-		if err != nil {
-			log.Panic(err)
-			success = false
-			return success
-		}
-		if count > 0 {
-			success = true
-			return success
-		}
-	}
-	success = false
-	return success
-}
-
 func getOwnedNotesSQL(username string) (notes []Note) {
 	//Connect to Database
 	db := connectDatabase()
@@ -620,4 +375,73 @@ func getPartOfNotesSQL(username string) (notes []Note) {
 		notes = append(notes, note)
 	}
 	return notes
+}
+
+func readPermissionsSQL(username string, noteid string, read string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	stmt, err := db.Prepare("SELECT read FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
+	//if no rows were returned
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(username, noteid).Scan(&read)
+	if err != nil {
+		return false
+	}
+	if read == "t" {
+
+		return true
+	}
+
+	return false
+
+}
+
+func checkWritePermissionsSQL(username string, noteid string, write string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	//prepare statement
+	stmt, err := db.Prepare("SELECT write FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(username, noteid).Scan(&write)
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+
+	//Check the permission
+	if write == "t" {
+		return true
+	}
+
+	return false
+}
+
+func noteOwnerSQL(username string, noteid string, owner string) bool {
+	db := connectDatabase()
+	defer db.Close()
+
+	stmt, err := db.Prepare("SELECT note_owner FROM _note WHERE note_owner = $1 AND note_id = $2;")
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(username, noteid).Scan(&owner)
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return true
 }
