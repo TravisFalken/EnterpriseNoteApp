@@ -23,12 +23,15 @@ func TestDatabase(t *testing.T) {
 	db := connectDatabase()
 	if assert.NotNil(t, db) {
 		assert.Equal(t, "Added user", addUserSQL(newUser), "Should return added user success message")
+		// tests utilizing user start here
 		assert.True(t, userNameExists("testUserName"), "Username should exist")
 		assert.True(t, validatePass("password", "testUserName"), "User should exist")
 		assert.Equal(t, "New Note Added", addNoteSQL(newNote), "Should return success message")
+		// tests utilizing note start here
 		notes := listAllNotesSQL("testUserName")
 		assert.Equal(t, "testUserName", notes[0].NoteOwner, "note should exist")
 
+		// all tests end here
 		assert.True(t, deleteAllUserNotesSQL("testUserName"), "should return deleted note. possibly have extra notes in table") // have not tested individual note deletion. need to set up du,mmy tables for that
 		assert.True(t, deleteSpecificUserSQL("testUserName"), "Should delete test user")
 	}
