@@ -266,6 +266,7 @@ func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []
 }
 
 //===================Delete Specific note=============================
+// This function currently tested as function below
 
 func deleteSpecificNoteSQL(noteid string, username string) (noteDeleted bool) {
 	//Connect to database
@@ -287,7 +288,29 @@ func deleteSpecificNoteSQL(noteid string, username string) (noteDeleted bool) {
 	return false
 }
 
-//===================Delete Specific note=============================
+//===================Delete All Notes By User=============================
+
+func deleteAllUserNotesSQL(username string) (noteDeleted bool) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//get the actually username out of the cookie
+
+	stmt, err := db.Prepare("DELETE FROM _note WHERE note_owner=$1;")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	deleted, _ := stmt.Exec(username)
+	rowsaffected, _ := deleted.RowsAffected()
+	if rowsaffected > 0 {
+		return true
+	}
+	return false
+}
+
+//===================Delete Specific user=============================
 
 func deleteSpecificUserSQL(username string) (noteDeleted bool) {
 	//Connect to database
@@ -308,6 +331,10 @@ func deleteSpecificUserSQL(username string) (noteDeleted bool) {
 	}
 	return false
 }
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// CLEAR HTTP TO CONTROLLER
+// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //check if user has read permissions
 func readPermissions(r *http.Request) (readPremission bool) {
@@ -340,6 +367,10 @@ func readPermissions(r *http.Request) (readPremission bool) {
 	return readPremission
 
 }
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// CLEAR HTTP TO CONTROLLER
+// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Check if user has write permissions
 func checkWritePermissions(r *http.Request) (writePermission bool) {
@@ -375,6 +406,10 @@ func checkWritePermissions(r *http.Request) (writePermission bool) {
 
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// CLEAR HTTP TO CONTROLLER
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+
 //Check if user is a owner of a note
 func noteOwner(r *http.Request) bool {
 	var owner string
@@ -398,6 +433,10 @@ func noteOwner(r *http.Request) bool {
 	return true
 
 }
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// CLEAR HTTP TO CONTROLLER
+// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //get note based on note id and user permissions
 func getPartOfNote(r *http.Request) (note Note) {
@@ -425,6 +464,10 @@ func getPartOfNote(r *http.Request) (note Note) {
 	return note
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// CLEAR HTTP TO CONTROLLER
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+
 func getOwnedNote(r *http.Request) (note Note) {
 	if noteOwner(r) {
 		//Connect to database
@@ -451,6 +494,10 @@ func getOwnedNote(r *http.Request) (note Note) {
 	}
 	return note
 }
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// CLEAR HTTP TO CONTROLLER
+// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Update note that you own
 func updateOwnedNote(r *http.Request) (success bool) {
