@@ -95,7 +95,7 @@ func addUserSQL(newUser User) string {
 			log.Fatal(err)
 		}
 
-		_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
+		_, err = stmt.Exec(newUser.GivenName, newUser.FamilyName, newUser.UserName, newUser.Password, newUser.Email)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -280,6 +280,28 @@ func deleteSpecificNoteSQL(noteid string, username string) (noteDeleted bool) {
 	}
 
 	deleted, _ := stmt.Exec(username, noteid)
+	rowsaffected, _ := deleted.RowsAffected()
+	if rowsaffected > 0 {
+		return true
+	}
+	return false
+}
+
+//===================Delete Specific note=============================
+
+func deleteSpecificUserSQL(username string) (noteDeleted bool) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//get the actually username out of the cookie
+
+	stmt, err := db.Prepare("DELETE FROM _user WHERE user_name=$1;")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	deleted, _ := stmt.Exec(username)
 	rowsaffected, _ := deleted.RowsAffected()
 	if rowsaffected > 0 {
 		return true
