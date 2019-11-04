@@ -30,7 +30,10 @@ func TestDatabase(t *testing.T) {
 		// tests utilizing note start here
 		notes := listAllNotesSQL("testUserName")
 		assert.Equal(t, "testUserName", notes[0].NoteOwner, "note should exist")
-
+		users := listAllUsersSQL("n/a")
+		assert.NotEqual(t, "", users[0], "Should not be null, should have users")
+		//partialSearchedNote := partialTextBodySearchSQL("Parti", "testUserName") // query works on db but not getting return here
+		//assert.Equal(t, "testUserName", partialSearchedNote[0].NoteOwner, "note should exist")
 		// all tests end here
 		assert.True(t, deleteAllUserNotesSQL("testUserName"), "should return deleted note. possibly have extra notes in table") // have not tested individual note deletion. need to set up du,mmy tables for that
 		assert.True(t, deleteSpecificUserSQL("testUserName"), "Should delete test user")
