@@ -90,7 +90,7 @@ func editNote(w http.ResponseWriter, r *http.Request) {
 //Edit privileges page for a note
 func showPrivileges(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
-		noteid := mux.Vars(r)["id"]
+		noteid := getNoteID(r)
 		privileges := struct {
 			NoteID     string
 			Privileges []privlige
@@ -118,7 +118,7 @@ func listAvaliablePermissions(w http.ResponseWriter, r *http.Request) {
 				NoteID string
 				Users  []string
 			}{
-				NoteID: mux.Vars(r)["id"],
+				NoteID: getNoteID(r),
 				Users:  getAvaliableUsers(r),
 			}
 
@@ -457,8 +457,9 @@ func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 
 	//get the id of the note the user wants to delete
 	//ASK floyd if we ca cut out deleteSpecificNote method and go straight to deleteSpecificNoteSQL
-	noteid := mux.Vars(r)["id"]
+	noteid := getNoteID(r)
 	username := getUserName(r)
+	log.Println("NoteID + Username : " + noteid + username) //for testing
 
 	return deleteSpecificNoteSQL(noteid, username)
 }
@@ -495,7 +496,7 @@ func readPermissions(r *http.Request) (readPremission bool) {
 	username := getUserName(r)
 	var read string
 	//Get note id from http
-	noteid := mux.Vars(r)["id"]
+	noteid := getNoteID(r)
 
 	return readPermissionsSQL(username, noteid, read)
 
@@ -506,7 +507,7 @@ func checkWritePermissions(r *http.Request) (writePermission bool) {
 	username := getUserName(r)
 	var write string
 
-	noteid := mux.Vars(r)["id"]
+	noteid := getNoteID(r)
 
 	return checkWritePermissionsSQL(username, noteid, write)
 
@@ -516,7 +517,7 @@ func checkWritePermissions(r *http.Request) (writePermission bool) {
 func noteOwner(r *http.Request) bool {
 	var owner string
 	username := getUserName(r)
-	noteid := mux.Vars(r)["id"]
+	noteid := getNoteID(r)
 
 	return noteOwnerSQL(username, noteid, owner)
 
@@ -526,7 +527,7 @@ func noteOwner(r *http.Request) bool {
 func getAvaliableUsers(r *http.Request) (users []string) {
 
 	username := getUserName(r)
-	noteid := mux.Vars(r)["id"]
+	noteid := getNoteID(r)
 
 	return getAvaliableUsersSQL(username, noteid)
 }
@@ -546,7 +547,7 @@ func getPartOfNote(r *http.Request) (note Note) {
 		defer db.Close()
 		//Get username
 		username := getUserName(r)
-		noteid := mux.Vars(r)["id"]
+		noteid := getNoteID(r)
 		//prepare statment
 		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created, read, write FROM _note JOIN _note_privileges ON _note.note_id = _note_privileges.note_id WHERE _note.note_id = $2 AND user_name = $1")
 		if err != nil {
@@ -574,7 +575,7 @@ func getOwnedNote(r *http.Request) (note Note) {
 		defer db.Close()
 		//get username
 		username := getUserName(r)
-		noteid := mux.Vars(r)["id"]
+		noteid := getNoteID(r)
 		//prepare statment
 		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created FROM _note WHERE note_owner = $1 AND note_id = $2;")
 		if err != nil {
@@ -606,7 +607,7 @@ func updateOwnedNote(r *http.Request) (success bool) {
 	//get username
 	username := getUserName(r)
 	//get the note id that we need to update
-	noteid := mux.Vars(r)["id"]
+	noteid := getNoteID(r)
 	//get values from form
 	title := r.FormValue("title")
 	body := r.FormValue("body")
@@ -645,7 +646,7 @@ func updatePartOfNote(r *http.Request) (success bool) {
 		//get username
 		//username := getUserName(r)
 		//get note id
-		noteID := mux.Vars(r)["id"]
+		noteID := getNoteID(r)
 
 		//Get value from form
 		body := r.FormValue("body")
@@ -684,7 +685,7 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		db := connectDatabase()
 		defer db.Close()
-		noteid := mux.Vars(r)["id"]
+		noteid := getNoteID(r)
 
 		var read string
 		var write string
@@ -737,7 +738,7 @@ func editPrivileges(w http.ResponseWriter, r *http.Request) {
 		var write string
 		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
-		noteid := mux.Vars(r)["id"]
+		noteid := getNoteID(r)
 		users := r.Form["user"]
 		log.Println(users[0])
 		for _, user := range users {
@@ -759,4 +760,10 @@ func editPrivileges(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
+}
+
+//get note id from url
+func getNoteID(r *http.Request) (noteid string) {
+	noteid = mux.Vars(r)["id"]
+	return noteid
 }

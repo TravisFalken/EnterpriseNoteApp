@@ -53,17 +53,17 @@ CREATE TABLE _group_user(
 
 ALTER TABLE _note ADD  
     CONSTRAINT note_owner FOREIGN KEY (note_owner)
-        REFERENCES _user (user_name);
+        REFERENCES _user (user_name) ON DELETE CASCADE;
 
 -- ------------------------------------------------
 
 ALTER TABLE _note_privileges ADD  
     CONSTRAINT user_name FOREIGN KEY (user_name)
-        REFERENCES _user (user_name);
+        REFERENCES _user (user_name) ON DELETE CASCADE;
 
 ALTER TABLE _note_privileges ADD  
     CONSTRAINT note_id FOREIGN KEY (note_id)
-        REFERENCES _note (note_id);
+        REFERENCES _note (note_id) ON DELETE CASCADE;
 
 
 -- ------------------------------------------------
