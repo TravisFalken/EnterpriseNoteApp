@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -291,42 +290,6 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 	} else {
 		//fmt.Fprintf(w, "You are not logged in!")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-
-}
-
-/*===============================LIST ALL NOTES BELONGING TO USER==================================*/
-//===========NOT USING CAN DELETE==========
-func listNotes(w http.ResponseWriter, r *http.Request) {
-	//Check if user is still online
-	if userStillLoggedIn(r) {
-		var notes []Note
-		usernameCookie, err := r.Cookie("username")
-		if err != nil {
-			log.Fatal(err)
-		}
-		username := usernameCookie.Value
-		//Connect to db
-		db := connectDatabase()
-		defer db.Close()
-		stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
-		var note Note
-		rows, err := stmt.Query(username)
-		for rows.Next() {
-			err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
-			if err != nil {
-				log.Fatal(err)
-			}
-			notes = append(notes, note)
-
-		}
-		fmt.Println(notes)
-		//just sending it straight to frontend for testing
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(notes)
-		//User is not logged in
-	} else {
-		fmt.Fprintf(w, "Not Logged in!")
 	}
 
 }

@@ -32,7 +32,6 @@ func main() {
 	router.HandleFunc("/signUp", signUp).Methods("GET")
 	router.HandleFunc("/editNote/{id}", editNote).Methods("GET") // For displaying edit note html page
 	//router.HandleFunc("/editNote", updateNote).Methods("POST") //For updating edit note
-	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/listNotes", allNotes).Methods("GET")
 	router.HandleFunc("/addUsers/{id}", listAvaliablePermissions).Methods("GET")
 	router.HandleFunc("/addPrivileges/{id}", addPermissions).Methods("POST")
