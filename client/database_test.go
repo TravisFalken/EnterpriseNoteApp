@@ -68,6 +68,10 @@ func TestDatabase(t *testing.T) {
 		partialSearchedNotePartOfTitle := partialSearchPartOfTitleSQL("t", "Trav3")
 		assert.Contains(t, partialSearchedNotePartOfTitle[0].NoteTitle, "t", "note should exist")
 
+		// notes returned for owned notes. Test owned notes have correct owner
+		ownedNotes := getOwnedNotesSQL("testUserName")
+		assert.Equal(t, "testUserName", ownedNotes[0].NoteOwner, "Note should have owner of testUserName")
+
 		// all user and note tests end here
 		// Test Delete specific note
 		assert.True(t, deleteSpecificNoteSQL(strconv.Itoa(partialSearchedNoteBody[0].NoteID), "testUserName"), "should return deleted note")

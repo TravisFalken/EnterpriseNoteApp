@@ -330,8 +330,8 @@ func getOwnedNotesSQL(username string) (notes []Note) {
 	db := connectDatabase()
 	defer db.Close()
 	var note Note
-	//Prepare Statment
-	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created FROM _note WHERE note_owner=$1")
+	//Prepare Statment // needs owner for testing
+	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created, note_owner FROM _note WHERE note_owner=$1")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -340,7 +340,7 @@ func getOwnedNotesSQL(username string) (notes []Note) {
 		log.Fatal(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 		notes = append(notes, note)
 	}
 
