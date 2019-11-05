@@ -57,13 +57,13 @@ ALTER TABLE _note ADD
 
 -- ------------------------------------------------
 
-ALTER TABLE "_note_privileges" ADD  
+ALTER TABLE _note_privileges ADD  
     CONSTRAINT user_name FOREIGN KEY (user_name)
         REFERENCES _user (user_name);
 
-ALTER TABLE "_note_privileges" ADD  
+ALTER TABLE _note_privileges ADD  
     CONSTRAINT note_id FOREIGN KEY (note_id)
-        REFERENCES "_note" (note_id);
+        REFERENCES _note (note_id);
 
 
 -- ------------------------------------------------
@@ -75,19 +75,19 @@ ALTER TABLE _group ADD
 
 -- ------------------------------------------------
 
-ALTER TABLE "_group_user" ADD  
+ALTER TABLE _group_user ADD  
     CONSTRAINT user_name FOREIGN KEY (user_name)
         REFERENCES _user (user_name);
 
-ALTER TABLE "_group_user" ADD  
+ALTER TABLE _group_user ADD  
     CONSTRAINT group_id FOREIGN KEY (group_id)
-        REFERENCES "_group" (group_id);
+        REFERENCES _group (group_id);
 
 
 -- ------------------------------------------------
 
 
-INSERT INTO "_user" (given_name,family_name,user_name,password,email) 
+INSERT INTO _user (given_name,family_name,user_name,password,email) 
 VALUES 
 ('Travis', 'Falkenberg', 'Trav3', '1234', 'travis.falkenberg141@gmail.com'),
 ('Mohammad','Vaughn','Vaughn1','password', 'fakeemail1@gmai2.com'),

@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"log"
-	"net/http"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -185,7 +184,7 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	defer db.Close()
 
 	bodyText += ":*" //for testing
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -206,15 +205,14 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 }
 
 //==============Search owned notes using partial text based on the notes title=================
-func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []Note) {
-	//get username
-	username := getUserName(r)
+func partialSeachOwnedTitleSQL(searchText string, username string) (ownedNotes []Note) {
+
 	//Connect to database
 
 	db := connectDatabase()
 	defer db.Close()
-	//searchText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note WHERE _note.title ~* $2 AND _note.note_owner = $1;")
+	searchText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note WHERE _note.title ~ $2 AND _note.note_owner = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -224,7 +222,8 @@ func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []No
 		log.Panic(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+
 		if err != nil {
 			log.Panic(err)
 		}
@@ -234,18 +233,15 @@ func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []No
 }
 
 //=============Partial search notes you are appart of by their title=================
-func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []Note) {
-	//get username
-	username := getUserName(r)
+func partialSearchPartOfTitleSQL(titleText string, username string) (partOfNotes []Note) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	//titleText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
+	titleText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Got HERE: Part of title") // for testing
 	var note Note
 	rows, err := stmt.Query(username, titleText)
 	if err != nil {
@@ -253,7 +249,7 @@ func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []
 		return partOfNotes
 	}
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -335,8 +331,8 @@ func getOwnedNotesSQL(username string) (notes []Note) {
 	db := connectDatabase()
 	defer db.Close()
 	var note Note
-	//Prepare Statment
-	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created FROM _note WHERE note_owner=$1")
+	//Prepare Statment // needs owner for testing
+	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created, note_owner FROM _note WHERE note_owner=$1")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -345,7 +341,7 @@ func getOwnedNotesSQL(username string) (notes []Note) {
 		log.Fatal(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 		notes = append(notes, note)
 	}
 

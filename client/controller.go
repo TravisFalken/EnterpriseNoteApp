@@ -435,11 +435,12 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 
 		bodyText := mux.Vars(r)["search"]
+		username := getUserName(r)
 		log.Println("Partial String:" + bodyText) //For testing
 		//gets notes owned that match the pattern
-		notes.OwnedNotes = partialSeachOwnedTitle(bodyText, r)
+		notes.OwnedNotes = partialSeachOwnedTitleSQL(bodyText, username)
 		//get notes part of that match the pattern
-		notes.PartOfNotes = partialSearchPartOfTitle(bodyText, r)
+		notes.PartOfNotes = partialSearchPartOfTitleSQL(bodyText, username)
 		fmt.Println(notes)
 		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
 		//User is not logged in
