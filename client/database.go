@@ -211,7 +211,7 @@ func partialSeachOwnedTitleSQL(searchText string, username string) (ownedNotes [
 	db := connectDatabase()
 	defer db.Close()
 	searchText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note WHERE _note.title ~* $2 AND _note.note_owner = $1;")
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note WHERE _note.title ~ $2 AND _note.note_owner = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -236,12 +236,11 @@ func partialSearchPartOfTitleSQL(titleText string, username string) (partOfNotes
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	//titleText += ":*"
+	titleText += ":*"
 	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Got HERE: Part of title") // for testing
 	var note Note
 	rows, err := stmt.Query(username, titleText)
 	if err != nil {
