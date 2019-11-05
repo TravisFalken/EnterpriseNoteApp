@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -542,24 +541,12 @@ func getAvaliableUsers(r *http.Request) (users []string) {
 func getPartOfNote(r *http.Request) (note Note) {
 	//Check to see if user has read permission or is note owner
 	if readPermissions(r) {
-		//Connect to database
-		db := connectDatabase()
-		defer db.Close()
+
 		//Get username
 		username := getUserName(r)
 		noteid := getNoteID(r)
-		//prepare statment
-		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created, read, write FROM _note JOIN _note_privileges ON _note.note_id = _note_privileges.note_id WHERE _note.note_id = $2 AND user_name = $1")
-		if err != nil {
-			log.Panic(err)
-		}
-		err = stmt.QueryRow(username, noteid).Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.Read, &note.Write)
-		if err == sql.ErrNoRows {
-			return note
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
+		note = getPartOfNoteSQL(noteid, username)
+
 	}
 	return note
 }
@@ -570,26 +557,11 @@ func getPartOfNote(r *http.Request) (note Note) {
 
 func getOwnedNote(r *http.Request) (note Note) {
 	if noteOwner(r) {
-		//Connect to database
-		db := connectDatabase()
-		defer db.Close()
+
 		//get username
 		username := getUserName(r)
 		noteid := getNoteID(r)
-		//prepare statment
-		stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created FROM _note WHERE note_owner = $1 AND note_id = $2;")
-		if err != nil {
-			log.Panic(err)
-			return note
-		}
-		err = stmt.QueryRow(username, noteid).Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
-		if err == sql.ErrNoRows {
-			return note
-		}
-		if err != nil {
-			log.Panic(err)
-			return note
-		}
+		note = getOwnedNoteSQL(noteid, username)
 
 	}
 	return note
