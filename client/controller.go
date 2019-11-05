@@ -264,29 +264,13 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		log.Println(newNote.CreatedDate) // For testing
 		newNote.NoteOwner = username
 
-		//Connect to db
-		db := connectDatabase()
-		defer db.Close()
-
-		//Prepare insert to stop SQL injections
-		var noteId string
-		stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4) RETURNING note_id;")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = stmt.QueryRow(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner).Scan(&noteId)
-		if err != nil {
-			log.Fatal(err)
-		}
+		//Add note to database and get noteid back
+		noteid := addNoteSQL(newNote)
+		log.Println("The note id for new note: " + noteid) //for testing
 		//Get users attached to note and add them to the database
 		var read string
 		var write string
 
-		stmt, err = db.Prepare("INSERT INTO _note_privileges(note_id, user_name, read, write) VALUES($1,$2,$3,$4);")
-		if err != nil {
-			log.Fatal(err)
-		}
 		users := r.Form["user"]
 		for _, user := range users {
 			//get included checkbox value
@@ -303,10 +287,8 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 					write = "f"
 				}
 
-				_, err = stmt.Exec(noteId, user, read, write)
-				if err != nil {
-					log.Fatal(err)
-				}
+				//Add permission to the database
+				addPermissionSQL(noteid, user, read, write)
 				log.Println("Read:" + read) //For testing
 			}
 

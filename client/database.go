@@ -105,25 +105,24 @@ func addUserSQL(newUser User) string {
 //===================Add Note=============================
 //
 
-func addNoteSQL(newNote Note) string {
+func addNoteSQL(newNote Note) (noteid string) {
 
 	//Connect to db
 	db := connectDatabase()
 	defer db.Close()
 
 	//Prepare insert to stop SQL injections
-	stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4);")
+	stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4) RETURNING note_id;")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = stmt.Exec(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner)
+	err = stmt.QueryRow(newNote.NoteTitle, newNote.NoteBody, newNote.CreatedDate, newNote.NoteOwner).Scan(&noteid)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return "New Note Added"
-	//User is not logged in
+	return noteid
 
 }
 
@@ -652,7 +651,7 @@ func addPermissionSQL(noteid string, user string, read string, write string) boo
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-
+	log.Println("Entered add permissions sql") //for testing
 	//Prepare statment
 	stmt, err := db.Prepare("INSERT INTO _note_privileges(note_id,user_name, read, write) VALUES($1, $2, $3, $4);")
 	if err != nil {
