@@ -83,6 +83,7 @@ func TestDatabase(t *testing.T) {
 
 		// test delete test user
 		assert.True(deleteSpecificUserSQL("testUserName"), "Should delete test user")
+
 	}
 
 }
