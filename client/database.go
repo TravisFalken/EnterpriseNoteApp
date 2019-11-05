@@ -544,3 +544,59 @@ func updatePrivilege(noteid string, username string, write string) bool {
 	}
 	return false
 }
+
+//Sql For updating ownded Note
+func updateOwnedNoteSQL(title string, body string, noteid string, noteOwner string) (success bool) {
+	//Connect to Database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("UPDATE _note SET title = $1, body = $2  WHERE note_id = $3 AND note_owner = $4;")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	result, err := stmt.Exec(title, body, noteid, noteOwner)
+	if err != nil {
+		log.Panic(err)
+		success = false
+		return success
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+	if count > 0 {
+		return true
+	}
+	return false
+}
+
+//Sql for updating a note user is part of
+func updatePartOfNoteSQL(noteID string, body string) (success bool) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	stmt, err := db.Prepare("UPDATE _note SET body = $1 WHERE note_id = $2")
+	result, err := stmt.Exec(body, noteID)
+	if err != nil {
+		log.Panic(err)
+		success = false
+		return success
+	}
+	//validate that update worked
+	count, err := result.RowsAffected()
+	if err != nil {
+		log.Panic(err)
+		success = false
+		return success
+	}
+	if count > 0 {
+		success = true
+		return success
+	}
+	success = false
+	return success
+}

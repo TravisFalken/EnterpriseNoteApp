@@ -612,26 +612,11 @@ func updateOwnedNote(r *http.Request) (success bool) {
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 	fmt.Println("This is the title and body of update: " + title + " " + body) //for testing
-	stmt, err := db.Prepare("UPDATE _note SET title = $1, body = $2  WHERE note_id = $3 AND note_owner = $4;")
-	if err != nil {
-		log.Panic(err)
-	}
-
-	result, err := stmt.Exec(title, body, noteid, username)
-	if err != nil {
-		log.Panic(err)
-		success = false
-		return success
-	}
-	count, err := result.RowsAffected()
-	if err != nil {
-		log.Panic(err)
+	if updateOwnedNoteSQL(title, body, noteid, username) {
+		return true
+	} else {
 		return false
 	}
-	if count > 0 {
-		return true
-	}
-	return false
 
 }
 
@@ -640,7 +625,7 @@ func updateOwnedNote(r *http.Request) (success bool) {
 // ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Update note you are part of
-func updatePartOfNote(r *http.Request) (success bool) {
+func updatePartOfNote(r *http.Request) bool {
 	if userStillLoggedIn(r) {
 
 		//get username
@@ -651,31 +636,12 @@ func updatePartOfNote(r *http.Request) (success bool) {
 		//Get value from form
 		body := r.FormValue("body")
 		fmt.Println("This is the update body: " + body) //This is for testing
-		//prepare execution query
-		//Connect to database
-		db := connectDatabase()
-		defer db.Close()
-		stmt, err := db.Prepare("UPDATE _note SET body = $1 WHERE note_id = $2")
-		result, err := stmt.Exec(body, noteID)
-		if err != nil {
-			log.Panic(err)
-			success = false
-			return success
-		}
-		//validate that update worked
-		count, err := result.RowsAffected()
-		if err != nil {
-			log.Panic(err)
-			success = false
-			return success
-		}
-		if count > 0 {
-			success = true
-			return success
+
+		if updatePartOfNoteSQL(noteID, body) {
+			return true
 		}
 	}
-	success = false
-	return success
+	return false
 }
 
 //Need to move to database.go but just putting it here for use sake
