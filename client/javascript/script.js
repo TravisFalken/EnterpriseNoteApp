@@ -37,3 +37,19 @@ function updateNote(noteID){
     
 }
 
+//Want to add users to note
+function addUsersClicked(noteID){
+    window.location.href = "/addUsers/" + noteID;
+    /*
+    $.ajax({
+        url: '/addUsers/' + noteID,
+        type: 'GET'
+    });
+    */
+}
+
+//Want to list all of the privileges for a note
+function editPrivileges(noteID){
+    window.location.href = "/listPrivileges/" + noteID;
+}
+

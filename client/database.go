@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -407,7 +408,7 @@ func checkWritePermissionsSQL(username string, noteid string, write string) bool
 	db := connectDatabase()
 	defer db.Close()
 	//prepare statement
-	stmt, err := db.Prepare("SELECT write FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
+	stmt, err := db.Prepare("SELECT write FROM _note_privileges WHERE user_name = $1 AND note_id = $2;")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -444,4 +445,110 @@ func noteOwnerSQL(username string, noteid string, owner string) bool {
 	}
 
 	return true
+}
+
+//get all users that are not already part of note
+func getAvaliableUsers(r *http.Request) (users []string) {
+	//connect to database
+	db := connectDatabase()
+	defer db.Close()
+	var user string
+	username := getUserName(r)
+	noteid := mux.Vars(r)["id"]
+
+	//prepare statement
+	stmt, err := db.Prepare("SELECT _user.user_name FROM _user WHERE  _user.user_name NOT IN (SELECT user_name FROM _note_privileges WHERE _note_privileges.note_id = $1)")
+	//"SELECT user_name FROM _user JOIN _note_privilges ON _user.user_name = _note_privileges.user_name WHERE _note_privileges.note_id = $1 AND _note_privilegs.user_name = NULL;")
+	if err != nil {
+		log.Panic(err)
+		return users
+	}
+
+	rows, err := stmt.Query(noteid)
+	if err != nil {
+		log.Panic(err)
+		return users
+	}
+	for rows.Next() {
+		rows.Scan(&user)
+		if user != username {
+			users = append(users, user)
+		}
+	}
+	return users
+}
+
+//get all the privilges from a note
+func getNotePrivileges(noteid string) (privileges []privlige) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	var newPrivilege privlige
+
+	//prepare statment
+	stmt, err := db.Prepare("SELECT user_name, read, write FROM _note_privileges WHERE note_id = $1;")
+	if err != nil {
+		log.Panic(err)
+		return privileges
+	}
+
+	rows, err := stmt.Query(noteid)
+	if err != nil {
+		log.Panic(err)
+		return privileges
+	}
+
+	for rows.Next() {
+		rows.Scan(&newPrivilege.Username, &newPrivilege.Read, &newPrivilege.Write)
+		privileges = append(privileges, newPrivilege)
+	}
+	return privileges
+}
+
+//Remove a privilege from a note
+func removePrivilege(noteid string, username string) bool {
+	//Connect to Database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("DELETE FROM _note_privileges WHERE note_id = $1 AND user_name = $2;")
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+
+	deleted, _ := stmt.Exec(noteid, username)
+	//Validate if any row has been deleted
+	rowsAffected, _ := deleted.RowsAffected()
+	if rowsAffected > 0 {
+		return true
+	}
+	return false
+}
+
+//Update exisiting privilege for a note
+func updatePrivilege(noteid string, username string, write string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statement
+	stmt, err := db.Prepare("UPDATE _note_privileges SET write = $1 WHERE note_id = $2 AND user_name = $3;")
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+
+	result, err := stmt.Exec(write, noteid, username)
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+	//Validate that the privilege has been updated
+	count, _ := result.RowsAffected()
+	if count > 0 {
+		return true
+	}
+	return false
 }

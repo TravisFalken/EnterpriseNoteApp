@@ -34,6 +34,10 @@ func main() {
 	//router.HandleFunc("/editNote", updateNote).Methods("POST") //For updating edit note
 	router.HandleFunc("/listAllNotes", listNotes).Methods("GET")
 	router.HandleFunc("/listNotes", allNotes).Methods("GET")
+	router.HandleFunc("/addUsers/{id}", listAvaliablePermissions).Methods("GET")
+	router.HandleFunc("/addPrivileges/{id}", addPermissions).Methods("POST")
+	router.HandleFunc("/listPrivileges/{id}", showPrivileges).Methods("GET")
+	router.HandleFunc("/editPrivileges/{id}", editPrivileges).Methods("POST")
 	router.HandleFunc("/login", login) //Can be a post and a get method so you know when user is loggin in
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("GET")  //Changed Method from delete to Get because browsers don't support delete method

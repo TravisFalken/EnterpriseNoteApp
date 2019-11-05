@@ -87,6 +87,50 @@ func editNote(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//Edit privileges page for a note
+func showPrivileges(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		noteid := mux.Vars(r)["id"]
+		privileges := struct {
+			NoteID     string
+			Privileges []privlige
+		}{
+			NoteID:     noteid,
+			Privileges: getNotePrivileges(noteid),
+		}
+
+		tpl.ExecuteTemplate(w, "editPrivileges.gohtml", privileges)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+}
+
+//Add people to existing note
+func listAvaliablePermissions(w http.ResponseWriter, r *http.Request) {
+
+	//Make sure user is still logged in
+	if userStillLoggedIn(r) {
+		//validate that user is note owner
+		if noteOwner(r) {
+			//create a temp struct to hold note id and usernames
+			tempStruct := struct {
+				NoteID string
+				Users  []string
+			}{
+				NoteID: mux.Vars(r)["id"],
+				Users:  getAvaliableUsers(r),
+			}
+
+			tpl.ExecuteTemplate(w, "addPermissions.gohtml", tempStruct)
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
 //=========================Checks if user login details are correct=========================================
 func login(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
@@ -250,7 +294,7 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 			includedCheckbox := r.FormValue("includedCheckbox_" + user)
 			//Check that the user has been included
 			if includedCheckbox != "" {
-				log.Println("User: " + user)
+				log.Println("User: " + user) //for testing
 				read = "t"
 				writeCheckbox := r.FormValue("writeCheckbox_" + user)
 				//Check that the user has write privlages
@@ -486,7 +530,7 @@ func noteOwner(r *http.Request) bool {
 //get note based on note id and user permissions
 func getPartOfNote(r *http.Request) (note Note) {
 	//Check to see if user has read permission or is note owner
-	if readPermissions(r) || noteOwner(r) {
+	if readPermissions(r) {
 		//Connect to database
 		db := connectDatabase()
 		defer db.Close()
@@ -621,4 +665,88 @@ func updatePartOfNote(r *http.Request) (success bool) {
 	}
 	success = false
 	return success
+}
+
+//Need to move to database.go but just putting it here for use sake
+//Add more users to a note
+func addPermissions(w http.ResponseWriter, r *http.Request) {
+	log.Println("Entered add premission") //For testing
+	if userStillLoggedIn(r) {
+		db := connectDatabase()
+		defer db.Close()
+		noteid := mux.Vars(r)["id"]
+
+		var read string
+		var write string
+		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
+		//Prepare statment
+		stmt, err := db.Prepare("INSERT INTO _note_privileges(note_id,user_name, read, write) VALUES($1, $2, $3, $4);")
+		if err != nil {
+			log.Panic(err)
+			http.Error(w, "Database Error", http.StatusInternalServerError)
+		}
+		users := r.Form["user"]
+		for _, user := range users {
+			//get included checkbox value
+			log.Println("User:" + user) //For testing
+			includedCheckbox := r.FormValue("includedCheckbox_" + user)
+			log.Println("Included Checkbox: " + includedCheckbox) // for testing
+			//Check that the user has been included
+			if includedCheckbox != "" {
+				log.Println("User: " + user)
+				read = "t"
+				writeCheckbox := r.FormValue("writeCheckbox_" + user)
+				//Check that the user has write privlages
+				if writeCheckbox != "" {
+					write = "t"
+				} else {
+					write = "f"
+				}
+
+				_, err = stmt.Exec(noteid, user, read, write)
+				if err != nil {
+					log.Fatal(err)
+				}
+				log.Println("Read:" + read) //For testing
+			}
+
+		}
+
+		http.Redirect(w, r, "/listNotes", http.StatusSeeOther)
+
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+func editPrivileges(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) && noteOwner(r) {
+		var included string
+		var writeValue string
+		var write string
+		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
+		noteid := mux.Vars(r)["id"]
+		users := r.Form["user"]
+		log.Println(users[0])
+		for _, user := range users {
+			included = r.FormValue("includedCheckbox_" + user)
+			//If user not included anymore note privilege will be moved
+			if included == "" {
+				removePrivilege(noteid, user)
+				continue
+			}
+			writeValue = r.FormValue("writeCheckbox_" + user)
+			if writeValue != "" {
+				write = "t"
+			} else {
+				write = "f"
+			}
+			updatePrivilege(noteid, user, write)
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
