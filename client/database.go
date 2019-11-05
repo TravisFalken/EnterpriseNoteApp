@@ -519,11 +519,11 @@ func getAvaliableUsersSQL(username string, noteid string) (users []string) {
 }
 
 //get all the privilges from a note
-func getNotePrivileges(noteid string) (privileges []privlige) {
+func getNotePrivileges(noteid string) (privileges []Privlige) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	var newPrivilege privlige
+	var newPrivilege Privlige
 
 	//prepare statment
 	stmt, err := db.Prepare("SELECT user_name, read, write FROM _note_privileges WHERE note_id = $1;")

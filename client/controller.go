@@ -91,7 +91,7 @@ func showPrivileges(w http.ResponseWriter, r *http.Request) {
 		noteid := getNoteID(r)
 		privileges := struct {
 			NoteID     string
-			Privileges []privlige
+			Privileges []Privlige
 		}{
 			NoteID:     noteid,
 			Privileges: getNotePrivileges(noteid),

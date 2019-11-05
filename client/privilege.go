@@ -1,6 +1,6 @@
 package main
 
-type privlige struct {
+type Privlige struct {
 	Username string
 	Read     string
 	Write    string
