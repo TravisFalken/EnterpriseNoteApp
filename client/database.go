@@ -600,3 +600,24 @@ func updatePartOfNoteSQL(noteID string, body string) (success bool) {
 	success = false
 	return success
 }
+
+//Add Permissions SQL
+func addPermissionSQL(noteid string, user string, read string, write string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("INSERT INTO _note_privileges(note_id,user_name, read, write) VALUES($1, $2, $3, $4);")
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+	_, err = stmt.Exec(noteid, user, read, write)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	return true
+}

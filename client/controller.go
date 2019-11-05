@@ -323,7 +323,7 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 }
 
 /*===============================LIST ALL NOTES BELONGING TO USER==================================*/
-
+//===========NOT USING CAN DELETE==========
 func listNotes(w http.ResponseWriter, r *http.Request) {
 	//Check if user is still online
 	if userStillLoggedIn(r) {
@@ -649,20 +649,14 @@ func updatePartOfNote(r *http.Request) bool {
 func addPermissions(w http.ResponseWriter, r *http.Request) {
 	log.Println("Entered add premission") //For testing
 	if userStillLoggedIn(r) {
-		db := connectDatabase()
-		defer db.Close()
+
 		noteid := getNoteID(r)
 
 		var read string
 		var write string
 		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
-		//Prepare statment
-		stmt, err := db.Prepare("INSERT INTO _note_privileges(note_id,user_name, read, write) VALUES($1, $2, $3, $4);")
-		if err != nil {
-			log.Panic(err)
-			http.Error(w, "Database Error", http.StatusInternalServerError)
-		}
+
 		users := r.Form["user"]
 		for _, user := range users {
 			//get included checkbox value
@@ -680,11 +674,11 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 				} else {
 					write = "f"
 				}
-
-				_, err = stmt.Exec(noteid, user, read, write)
-				if err != nil {
-					log.Fatal(err)
+				//Add to database
+				if !addPermissionSQL(noteid, user, read, write) {
+					http.Error(w, "Database Error", http.StatusInternalServerError)
 				}
+
 				log.Println("Read:" + read) //For testing
 			}
 
