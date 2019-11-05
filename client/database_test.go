@@ -34,6 +34,8 @@ func TestDatabase(t *testing.T) {
 		// all tests end here
 		assert.True(t, deleteAllUserNotesSQL("testUserName"), "should return deleted note. possibly have extra notes in table") // have not tested individual note deletion. need to set up du,mmy tables for that
 		assert.True(t, deleteSpecificUserSQL("testUserName"), "Should delete test user")
+
+		// test
 	}
 
 }
