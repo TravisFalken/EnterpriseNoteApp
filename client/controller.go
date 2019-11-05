@@ -522,6 +522,15 @@ func noteOwner(r *http.Request) bool {
 
 }
 
+//get all users that are not already part of note
+func getAvaliableUsers(r *http.Request) (users []string) {
+
+	username := getUserName(r)
+	noteid := mux.Vars(r)["id"]
+
+	return getAvaliableUsersSQL(username, noteid)
+}
+
 // ------------------------------------------------------------------------------------------------------------------------------------------------
 // CLEAR SQL TO DATABASE
 // ------------------------------------------------------------------------------------------------------------------------------------------------

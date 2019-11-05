@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -444,17 +443,14 @@ func noteOwnerSQL(username string, noteid string, owner string) bool {
 }
 
 //get all users that are not already part of note
-func getAvaliableUsers(r *http.Request) (users []string) {
+func getAvaliableUsersSQL(username string, noteid string) (users []string) {
 	//connect to database
 	db := connectDatabase()
 	defer db.Close()
 	var user string
-	username := getUserName(r)
-	noteid := mux.Vars(r)["id"]
 
 	//prepare statement
 	stmt, err := db.Prepare("SELECT _user.user_name FROM _user WHERE  _user.user_name NOT IN (SELECT user_name FROM _note_privileges WHERE _note_privileges.note_id = $1)")
-	//"SELECT user_name FROM _user JOIN _note_privilges ON _user.user_name = _note_privileges.user_name WHERE _note_privileges.note_id = $1 AND _note_privilegs.user_name = NULL;")
 	if err != nil {
 		log.Panic(err)
 		return users
