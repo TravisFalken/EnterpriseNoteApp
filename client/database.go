@@ -78,27 +78,30 @@ func validatePass(password string, username string) bool {
 
 //===================Add User=============================
 //
-func addUserSQL(newUser User) string {
+func addUserSQL(newUser User) bool {
 
+	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
 
+	//Validate that username does not already exist
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
 		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO _user VALUES($1,$2,$3,$4,$5);")
+		stmt, err := db.Prepare("INSERT INTO _user(user_name, password, email, given_name, family_name) VALUES($1,$2,$3,$4,$5);")
 		if err != nil {
-			log.Fatal(err)
+			log.Panic(err)
+			return false
 		}
 
-		_, err = stmt.Exec(newUser.GivenName, newUser.FamilyName, newUser.UserName, newUser.Password, newUser.Email)
+		_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return "Added user"
+		return true
 	}
 
-	return "Username already exists"
+	return false
 
 }
 

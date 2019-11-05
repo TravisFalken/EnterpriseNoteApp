@@ -222,27 +222,19 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	newUser.FamilyName = r.FormValue("family_name")
 	newUser.Email = r.FormValue("email")
 	newUser.Password = r.FormValue("password")
-	//Create connection to server
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
 
+	//Validate that username does not already exist
 	if !userNameExists(newUser.UserName) {
-		//Prepare insert to stop SQL injections
-		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO _user(user_name, password, email, given_name, family_name) VALUES($1,$2,$3,$4,$5);")
-		if err != nil {
-			log.Fatal(err)
+		//Add user to database
+		if addUserSQL(newUser) {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		} else {
+			fmt.Fprintf(w, "Failed to create new user!")
 		}
-
-		_, err = stmt.Exec(newUser.UserName, newUser.Password, newUser.Email, newUser.GivenName, newUser.FamilyName)
-		if err != nil {
-			log.Fatal(err)
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
-		fmt.Fprintf(w, "Username already exists")
+		fmt.Fprintf(w, "Username already exists!")
 	}
+
 }
 
 //==========================ADD NOTE=============================================================
