@@ -53,7 +53,7 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 func createNote(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		user := getUserName(r)
-		users := listAllUses(user)
+		users := listAllUsersSQL(user)
 		tpl.ExecuteTemplate(w, "createNote.gohtml", users)
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -355,33 +355,6 @@ func listNotes(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Not Logged in!")
 	}
 
-}
-
-//============================================LIST ALL REGISTERED USERS=====================
-//This function creates a list of all registerd users
-func listAllUses(loggedInUser string) []string {
-	//Not 100% sure
-	//return listAllUsersSQL(loggedInUser)
-	var users []string
-	var username string
-	//Connect to db
-	db := connectDatabase()
-	defer db.Close()
-
-	//Send query to the db
-	rows, err := db.Query("SELECT user_name FROM _user;")
-	if err != nil {
-		log.Fatal(err)
-	}
-	for rows.Next() {
-		err = rows.Scan(&username)
-		//Make sure we dont add logged in user to recommended
-		if loggedInUser != username {
-			users = append(users, username)
-		}
-	}
-
-	return users
 }
 
 //=========================USER LOGOUT======================================================
