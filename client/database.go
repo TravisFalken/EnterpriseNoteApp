@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -195,6 +196,11 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	}
 	for rows.Next() {
 		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+		log.Println("Note ID: " + strconv.Itoa(note.NoteID))
+		log.Println("Note Title: " + note.NoteTitle)
+		log.Println("Note Body: " + note.NoteBody)
+		log.Println("Note Created Date: " + note.CreatedDate)
+		log.Println("Note Owner: " + note.NoteOwner)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -212,8 +218,8 @@ func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []No
 
 	db := connectDatabase()
 	defer db.Close()
-	//searchText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note WHERE _note.title ~* $2 AND _note.note_owner = $1;")
+	searchText += ":*"
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created,  _note.note_owner FROM _note WHERE _note.title ~* $2 AND _note.note_owner = $1;")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -223,7 +229,8 @@ func partialSeachOwnedTitle(searchText string, r *http.Request) (ownedNotes []No
 		log.Panic(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
+
 		if err != nil {
 			log.Panic(err)
 		}
@@ -240,7 +247,7 @@ func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []
 	db := connectDatabase()
 	defer db.Close()
 	//titleText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
+	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -252,7 +259,7 @@ func partialSearchPartOfTitle(titleText string, r *http.Request) (partOfNotes []
 		return partOfNotes
 	}
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.NoteOwner, &note.NoteTitle, &note.NoteBody, &note.CreatedDate)
+		err = rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
 		if err != nil {
 			log.Panic(err)
 		}
