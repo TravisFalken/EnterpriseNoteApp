@@ -464,6 +464,8 @@ func getPartOfNoteSQL(noteid string, username string) (note Note) {
 	return note
 }
 
+//===================Get read permissions=============================
+
 func readPermissionsSQL(username string, noteid string, read string) bool {
 	//Connect to database
 	db := connectDatabase()
@@ -695,6 +697,10 @@ func updateOwnedNoteSQL(title string, body string, noteid string, noteOwner stri
 	}
 	return false
 }
+
+// -------------------------------------------------------------------------------------------------
+// ERROR HERE. This code is exactly the same as any update code. i understand that it is after an part of check in controller however it would be a better idea to have a generic update note query that is called to remove double ups
+// -------------------------------------------------------------------------------------------------
 
 //Sql for updating a note user is part of
 func updatePartOfNoteSQL(noteID string, body string) (success bool) {
