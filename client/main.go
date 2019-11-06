@@ -45,5 +45,18 @@ func main() {
 	//router.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
 	router.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("./javascript")))) // Handler for serving files within the javascript folder
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))                      //handler for serving files within the css folder
+
+	/////////////////////GROUPS SECTION///////////////////////////
+	router.HandleFunc("/viewGroups", viewAllSavedGroups).Methods("GET")
+	router.HandleFunc("/createGroup", createGroup).Methods("GET") // For html page
+	router.HandleFunc("/addGroup", addGroup).Methods("POST")
+	router.HandleFunc("/deleteGroup/{id}", deleteGroup).Methods("GET")
+	router.HandleFunc("/viewEditGroupUsers/{id}", viewEditGroupUsers).Methods("GET") // For html page
+	router.HandleFunc("/editGroupUsers/{id}", editGroupUsers).Methods("POST")
+	router.HandleFunc("/viewGroup/{id}", viewGroup).Methods("GET")
+	router.HandleFunc("/updateGroup/{id}", updateGroup).Methods("POST")
+	router.HandleFunc("/AddUsersGroup/{id}", viewAddGroupUsers).Methods("GET") // For html page
+	router.HandleFunc("/AddUsersGroup/{id}", addGroupUsers).Methods("POST")
+	//router.HandleFunc("/editGroup/{id}", editGroup).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

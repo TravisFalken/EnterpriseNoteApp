@@ -53,3 +53,26 @@ function editPrivileges(noteID){
     window.location.href = "/listPrivileges/" + noteID;
 }
 
+//Delete group
+function deleteGroup(groupID){
+    if (window.confirm("By clicking Okay the Group will be deleted")) {
+        window.location.href = "/deleteGroup/" + groupID;
+    }
+    
+}
+
+//Edit group users
+function editGroupUsers(groupID){
+    window.location.href = "/viewEditGroupUsers/" + groupID;
+}
+
+//view a group to edit
+function viewGroup(groupID){
+    window.location.href = "/viewGroup/" + groupID;
+}
+
+//view users to add to note
+function viewaddGroupUsers(groupID){
+    window.location.href = "/AddUsersGroup/" + groupID;
+}
+

@@ -426,14 +426,15 @@ func readPermissionsSQL(username string, noteid string, read string) bool {
 	db := connectDatabase()
 	defer db.Close()
 	stmt, err := db.Prepare("SELECT read FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
-	//if no rows were returned
-	if err == sql.ErrNoRows {
-		return false
-	}
+
 	if err != nil {
 		log.Panic(err)
 	}
 	err = stmt.QueryRow(username, noteid).Scan(&read)
+	//if no rows were returned
+	if err == sql.ErrNoRows {
+		return false
+	}
 	if err != nil {
 		return false
 	}
@@ -668,4 +669,340 @@ func addPermissionSQL(noteid string, user string, read string, write string) boo
 	}
 
 	return true
+}
+
+////////////////SAVED PERMISSIONS SECTION///////////////////////
+
+//Create a new group
+func createNewGroup(groupName string, groupOwner string, read string, write string) (groupID string) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("INSERT INTO _group(group_title, read, write, group_owner) VALUES($1,$2,$3,$4) RETURNING group_id;")
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(groupName, read, write, groupOwner).Scan(&groupID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return groupID
+}
+
+//get one group based on group id
+func getGroup(groupid string) (group Group) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statement
+	stmt, err := db.Prepare("SELECT group_id, group_title, read, write FROM _group WHERE group_id = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = stmt.QueryRow(groupid).Scan(&group.GroupID, &group.GroupTitle, &group.GroupRead, &group.GroupWrite)
+	if err == sql.ErrNoRows {
+		log.Panic(err)
+		return group
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return group
+}
+
+//Get all of the groups
+func getAllGroups(username string) (groups []Group) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	var group Group
+	//Prepare statement
+	stmt, err := db.Prepare("SELECT group_id, group_title, read, write FROM _group WHERE group_owner = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for rows.Next() {
+		rows.Scan(&group.GroupID, &group.GroupTitle, &group.GroupRead, &group.GroupWrite)
+		groups = append(groups, group)
+	}
+
+	return groups
+}
+
+//Save a user to a group
+func saveGroupUserSQL(groupID string, username string) bool {
+	//Connect to DB
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("INSERT INTO _group_user(group_id, user_name) VALUES($1,$2);")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	_, err = stmt.Exec(groupID, username)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	return true
+}
+
+//Validate if user is group owner
+func validateGroupOwner(username string, groupid string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	var groupUsername string
+
+	//Prepare statement
+	stmt, err := db.Prepare("SELECT group_owner FROM _group WHERE group_id = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = stmt.QueryRow(groupid).Scan(&groupUsername)
+	if err == sql.ErrNoRows {
+		log.Panic(err)
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	//Validate that username equals group username
+	if username != groupUsername {
+		return false
+	}
+
+	return true
+}
+
+//get all saved users for a group
+func getGroupUsers(groupid string) (users []string) {
+
+	var user string
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("SELECT user_name FROM _group_user WHERE group_id = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	rows, err := stmt.Query(groupid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//run through all the rows of the query
+	for rows.Next() {
+		rows.Scan(&user)
+		users = append(users, user)
+	}
+
+	return users
+}
+
+//get group privileges
+func getGroupPrivileges(groupid string) (read string, write string) {
+	//Connect Database
+	db := connectDatabase()
+	defer db.Close()
+
+	stmt, err := db.Prepare("SELECT read, write FROM _group WHERE group_id = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	stmt.QueryRow(groupid).Scan(&read, &write)
+	return read, write
+}
+
+//edit group privileges
+func editGroupPrivileges(groupid string, write string, read string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statement
+	stmt, err := db.Prepare("UPDATE _group SET write = $1, read = $2 WHERE group_id = $3;")
+	if err != nil {
+		log.Panic(err)
+	}
+	result, err := stmt.Exec(write, read, groupid)
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+
+	//Validate that row updated
+	count, err := result.RowsAffected()
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Panic(err)
+		return false
+	}
+	if count == 0 {
+		return false
+	}
+
+	return true
+}
+
+//Remove user from group
+func removeGroupUser(groupid string, user string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("DELETE FROM _group_user WHERE group_id = $1 AND user_name = $2;")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	result, err := stmt.Exec(groupid, user)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//validate that user has been deleted
+	count, err := result.RowsAffected()
+	if err == sql.ErrNoRows {
+		log.Panic(err)
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	if count == 0 {
+		return false
+	}
+	return true
+}
+
+//Remove group from database
+func removeGroup(groupid string) bool {
+	//Connect database
+	db := connectDatabase()
+
+	//Prepare statement
+	stmt, err := db.Prepare("DELETE FROM _group WHERE group_id = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	result, err := stmt.Exec(groupid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//Validate that note has been deleted
+	count, err := result.RowsAffected()
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+	if count > 0 {
+		return true
+	}
+	return false
+}
+
+//get the group title
+func getGroupTitle(groupid string) (title string) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//prepare statement
+	stmt, err := db.Prepare("SELECT group_title FROM _group WHERE group_id = $1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	err = stmt.QueryRow(groupid).Scan(&title)
+	if err == sql.ErrNoRows {
+		return title
+	}
+	if err != nil {
+		log.Panic(err)
+		return title
+	}
+	return title
+}
+
+//edit a group and save it in the database
+func editGroup(groupid string, write string) bool {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare statment
+	stmt, err := db.Prepare("UPDATE _group SET write = $1 WHERE group_id = $2;")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	result, err := stmt.Exec(write, groupid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	count, err := result.RowsAffected()
+	if err == sql.ErrNoRows {
+		log.Panic(err)
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	if count > 0 {
+		return true
+	}
+	return false
+}
+
+//Get all of the users that are not part of the group
+func getAvaliableGroupUsers(groupid string, username string) (users []string) {
+	//Connect to database
+	db := connectDatabase()
+	defer db.Close()
+	var user string
+	//prepare statement
+	stmt, err := db.Prepare("SELECT _user.user_name FROM _user WHERE  _user.user_name NOT IN (SELECT user_name FROM _group_user WHERE _group_user.group_id = $1)")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	rows, err := stmt.Query(groupid)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&user)
+		if err != nil {
+			log.Panic(err)
+		}
+		//Make sure note owner is note part of users
+		if user != username {
+			log.Println("User not int group: " + user) // For testing
+			users = append(users, user)
+		}
+	}
+
+	return users
 }

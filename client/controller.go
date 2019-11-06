@@ -53,7 +53,18 @@ func createNote(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		user := getUserName(r)
 		users := listAllUsersSQL(user)
-		tpl.ExecuteTemplate(w, "createNote.gohtml", users)
+		groups := getAllGroups(user)
+		//Create temp struct
+		groupsAndUsers := struct {
+			Users  []string
+			Groups []Group
+		}{
+			Users:  users,
+			Groups: groups,
+		}
+
+		log.Println("Users for create note: " + groupsAndUsers.Users[1]) //For testing
+		tpl.ExecuteTemplate(w, "createNote.gohtml", groupsAndUsers)
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
@@ -88,7 +99,7 @@ func editNote(w http.ResponseWriter, r *http.Request) {
 //Edit privileges page for a note
 func showPrivileges(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
-		noteid := getNoteID(r)
+		noteid := getID(r)
 		privileges := struct {
 			NoteID     string
 			Privileges []Privlige
@@ -116,7 +127,7 @@ func listAvaliablePermissions(w http.ResponseWriter, r *http.Request) {
 				NoteID string
 				Users  []string
 			}{
-				NoteID: getNoteID(r),
+				NoteID: getID(r),
 				Users:  getAvaliableUsers(r),
 			}
 
@@ -261,30 +272,48 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		//Get users attached to note and add them to the database
 		var read string
 		var write string
+		//validate if user wants to user groups or manually enter users
+		useGroup := r.FormValue("useSavedGroup")
+		if useGroup == "" {
+			users := r.Form["user"]
+			for _, user := range users {
+				//get included checkbox value
+				includedCheckbox := r.FormValue("includedCheckbox_" + user)
+				//Check that the user has been included
+				if includedCheckbox != "" {
+					log.Println("User: " + user) //for testing
+					read = "t"
+					writeCheckbox := r.FormValue("writeCheckbox_" + user)
+					//Check that the user has write privlages
+					if writeCheckbox != "" {
+						write = "t"
+					} else {
+						write = "f"
+					}
 
-		users := r.Form["user"]
-		for _, user := range users {
-			//get included checkbox value
-			includedCheckbox := r.FormValue("includedCheckbox_" + user)
-			//Check that the user has been included
-			if includedCheckbox != "" {
-				log.Println("User: " + user) //for testing
-				read = "t"
-				writeCheckbox := r.FormValue("writeCheckbox_" + user)
-				//Check that the user has write privlages
-				if writeCheckbox != "" {
-					write = "t"
-				} else {
-					write = "f"
+					//Add permission to the database
+					addPermissionSQL(noteid, user, read, write)
+					log.Println("Read:" + read) //For testing
 				}
 
-				//Add permission to the database
-				addPermissionSQL(noteid, user, read, write)
-				log.Println("Read:" + read) //For testing
 			}
-
+		} else {
+			groupid := r.FormValue("group")
+			log.Println("Group id: " + groupid) // for testing
+			//Validate that user is group owner
+			if validateGroupOwner(username, groupid) {
+				//Gett all of users from group
+				users := getGroupUsers(groupid)
+				//get write and read premissions from the group
+				read, write = getGroupPrivileges(groupid)
+				log.Println("read + write: " + read + " " + write) //for testing
+				for _, user := range users {
+					addPermissionSQL(noteid, user, read, write)
+				}
+			} else {
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+			}
 		}
-		log.Println(users) //for testing
 		fmt.Fprintf(w, "New Note Added")
 		//User is not logged in
 	} else {
@@ -366,7 +395,7 @@ func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 
 	//get the id of the note the user wants to delete
 	//ASK floyd if we ca cut out deleteSpecificNote method and go straight to deleteSpecificNoteSQL
-	noteid := getNoteID(r)
+	noteid := getID(r)
 	username := getUserName(r)
 	log.Println("NoteID + Username : " + noteid + username) //for testing
 
@@ -405,7 +434,7 @@ func readPermissions(r *http.Request) (readPremission bool) {
 	username := getUserName(r)
 	var read string
 	//Get note id from http
-	noteid := getNoteID(r)
+	noteid := getID(r)
 
 	return readPermissionsSQL(username, noteid, read)
 
@@ -416,7 +445,7 @@ func checkWritePermissions(r *http.Request) (writePermission bool) {
 	username := getUserName(r)
 	var write string
 
-	noteid := getNoteID(r)
+	noteid := getID(r)
 
 	return checkWritePermissionsSQL(username, noteid, write)
 
@@ -426,7 +455,7 @@ func checkWritePermissions(r *http.Request) (writePermission bool) {
 func noteOwner(r *http.Request) bool {
 	var owner string
 	username := getUserName(r)
-	noteid := getNoteID(r)
+	noteid := getID(r)
 
 	return noteOwnerSQL(username, noteid, owner)
 
@@ -436,7 +465,7 @@ func noteOwner(r *http.Request) bool {
 func getAvaliableUsers(r *http.Request) (users []string) {
 
 	username := getUserName(r)
-	noteid := getNoteID(r)
+	noteid := getID(r)
 
 	return getAvaliableUsersSQL(username, noteid)
 }
@@ -454,7 +483,7 @@ func getPartOfNote(r *http.Request) (note Note) {
 
 		//Get username
 		username := getUserName(r)
-		noteid := getNoteID(r)
+		noteid := getID(r)
 		note = getPartOfNoteSQL(noteid, username)
 
 	}
@@ -470,7 +499,7 @@ func getOwnedNote(r *http.Request) (note Note) {
 
 		//get username
 		username := getUserName(r)
-		noteid := getNoteID(r)
+		noteid := getID(r)
 		note = getOwnedNoteSQL(noteid, username)
 
 	}
@@ -489,7 +518,7 @@ func updateOwnedNote(r *http.Request) (success bool) {
 	//get username
 	username := getUserName(r)
 	//get the note id that we need to update
-	noteid := getNoteID(r)
+	noteid := getID(r)
 	//get values from form
 	title := r.FormValue("title")
 	body := r.FormValue("body")
@@ -513,7 +542,7 @@ func updatePartOfNote(r *http.Request) bool {
 		//get username
 		//username := getUserName(r)
 		//get note id
-		noteID := getNoteID(r)
+		noteID := getID(r)
 
 		//Get value from form
 		body := r.FormValue("body")
@@ -532,7 +561,7 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 	log.Println("Entered add premission") //For testing
 	if userStillLoggedIn(r) {
 
-		noteid := getNoteID(r)
+		noteid := getID(r)
 
 		var read string
 		var write string
@@ -580,7 +609,7 @@ func editPrivileges(w http.ResponseWriter, r *http.Request) {
 		var write string
 		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
-		noteid := getNoteID(r)
+		noteid := getID(r)
 		users := r.Form["user"]
 		log.Println(users[0])
 		for _, user := range users {
@@ -605,7 +634,308 @@ func editPrivileges(w http.ResponseWriter, r *http.Request) {
 }
 
 //get note id from url
-func getNoteID(r *http.Request) (noteid string) {
-	noteid = mux.Vars(r)["id"]
-	return noteid
+func getID(r *http.Request) (id string) {
+	id = mux.Vars(r)["id"]
+	return id
+}
+
+////////////GROUP PRIVILEGES SECTION/////////////////////
+
+//Displays HTML page for showing all groups that the user owns
+func viewAllSavedGroups(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		//get all groups belonging to the user
+		groups := getAllGroups(username)
+
+		tpl.ExecuteTemplate(w, "viewGroups.gohtml", groups)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//displays the html page for creating a new group
+func createGroup(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		users := listAllUsersSQL(username)
+		tpl.ExecuteTemplate(w, "createGroup.gohtml", users)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//Add a new Group to the database
+func addGroup(w http.ResponseWriter, r *http.Request) {
+	var newGroup Group
+	alert := ""
+	newGroup.GroupOwner = getUserName(r)
+	newGroup.GroupTitle = r.FormValue("title")
+	writePrivilege := r.FormValue("write_privilege")
+	//Validate that group has write privileges
+	if writePrivilege != "" {
+		newGroup.GroupWrite = "t"
+	} else {
+		newGroup.GroupWrite = "f"
+	}
+
+	//Create new group
+	groupid := createNewGroup(newGroup.GroupTitle, newGroup.GroupOwner, "t", newGroup.GroupWrite)
+	//validate that group was added to database
+	if groupid == "" {
+		alert = `<script>
+					alert("Group Not Successfully Created");
+					window.location.href="/";
+				</script>`
+	} else {
+		alert = `<script>
+					alert("Successfully Created Group");
+					window.location.href="/";
+				</script>`
+	}
+	users := r.Form["user"]
+
+	for _, user := range users {
+		includedCheckBox := r.FormValue("includedCheckbox_" + user)
+		//validate that user is included in the group
+		if includedCheckBox != "" {
+			saveGroupUserSQL(groupid, user)
+		}
+	}
+	log.Println("Group ID: " + groupid) //For testing
+
+	w.Write([]byte(alert))
+
+}
+
+//Delete Group
+func deleteGroup(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		alert := ""
+		groupid := getID(r)
+		//Validate that group owner
+		if validateGroupOwner(username, groupid) {
+
+			//Delete note and validate that note has been deleted
+			if removeGroup(groupid) {
+				alert = `<script>
+							alert("Successfully Deleted Group");
+							window.location.href="/";
+							</script>`
+			} else {
+				alert = `<script>
+							alert("Group was not successfully deleted");
+							window.location.href="/";
+							</script>`
+			}
+
+			w.Write([]byte(alert))
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//Display the edit group page
+func viewEditGroupUsers(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		groupid := getID(r)
+		username := getUserName(r)
+		//validate that user is note owner
+		if validateGroupOwner(username, groupid) {
+
+			users := getGroupUsers(groupid)
+
+			//Make temp struct to hold group id and users
+			editStruct := struct {
+				GroupID string
+				Users   []string
+			}{
+				GroupID: groupid,
+				Users:   users,
+			}
+			tpl.ExecuteTemplate(w, "editGroupUsers.gohtml", editStruct)
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//edit group users
+func editGroupUsers(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		success := true
+		alert := ""
+		groupid := getID(r)
+		username := getUserName(r)
+		//For weird bug DO NOT REMOVE
+		_ = r.FormValue("includedCheckbox_test")
+		//validate that user is the owner of the group
+		if validateGroupOwner(username, groupid) {
+			users := r.Form["user"]
+			for _, user := range users {
+				included := r.FormValue("includedCheckbox_" + user)
+				//Validate that user has been removed
+				if included == "" {
+					if !removeGroupUser(groupid, user) {
+						success = false
+						break
+					}
+				}
+			}
+			if success {
+				alert = `<script>
+							alert("Successfully Edited Group");
+							window.location.href="/";
+							</script>`
+			} else {
+				alert = `<script>
+							alert("Group was not successfully Edited");
+							window.location.href="/";
+						</script>`
+			}
+			//notify user
+			w.Write([]byte(alert))
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+}
+
+//Display the Group the user wants to edit
+func viewGroup(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		groupid := getID(r)
+		//validate the the user is the owner of the note
+		if validateGroupOwner(username, groupid) {
+			group := getGroup(groupid)
+
+			tpl.ExecuteTemplate(w, "editGroup.gohtml", group)
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//update a group
+func updateGroup(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		groupid := getID(r)
+		var write string
+		var alert string
+		//Validate that user is the owner of the group
+		if validateGroupOwner(username, groupid) {
+			writeCheckbox := r.FormValue("writeCheckbox")
+			//Validate if group can have write permissions
+			if writeCheckbox == "" {
+				write = "f"
+			} else {
+				write = "t"
+			}
+			//Update group
+			if editGroup(groupid, write) {
+				alert = `<script>
+							alert("Successfully Updated Group");
+							window.location.href="/";
+						</script>`
+			} else {
+				alert = `<script>
+							alert("Group was not successfully Updated");
+							window.location.href="/";
+						</script>`
+			}
+			//Show user result
+			w.Write([]byte(alert))
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//Display users that the user wants to add to a group
+func viewAddGroupUsers(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		groupid := getID(r)
+		//Validate that user is the owner of the group
+		if validateGroupOwner(username, groupid) {
+
+			users := getAvaliableGroupUsers(groupid, username)
+			//Temp struct
+			addUsersStruct := struct {
+				GroupID string
+				Users   []string
+			}{
+				GroupID: groupid,
+				Users:   users,
+			}
+
+			tpl.ExecuteTemplate(w, "addGroupUsers.gohtml", addUsersStruct)
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//Add the users to the group
+func addGroupUsers(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		username := getUserName(r)
+		groupid := getID(r)
+		var alert string
+		success := true
+		//Valdiate if user is the owner of the note
+		if validateGroupOwner(username, groupid) {
+			//for dealing with bug DO NOT REMOVE
+			_ = r.FormValue("includedCheckbox_test")
+			users := r.Form["user"]
+			for _, user := range users {
+				log.Println("user: " + user) // For testing
+				includedCheckBox := r.FormValue("includedCheckbox_" + user)
+				//Validate that add user has been included
+				if includedCheckBox != "" {
+					//Validate that add user has been added to database
+					if !saveGroupUserSQL(groupid, user) {
+						success = false
+					}
+				}
+			}
+			//Make sure that the users were added successfully
+			if success {
+				alert = `<script>
+							alert("Successfully Added Users to Group");
+							window.location.href="/";
+						</script>`
+			} else {
+				alert = `<script>
+							alert("Users were not successfully Added to Group");
+							window.location.href="/";
+						</script>`
+			}
+
+			//Display result to user
+			w.Write([]byte(alert))
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
