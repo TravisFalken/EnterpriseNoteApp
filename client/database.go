@@ -357,7 +357,8 @@ func deleteSpecificUserSQL(username string) (noteDeleted bool) {
 	return false
 }
 
-//SQL For getting all of the notes the user has created
+//===================Get Owned Notes=============================
+
 func getOwnedNotesSQL(username string) (notes []Note) {
 	//Connect to Database
 	db := connectDatabase()
@@ -383,7 +384,8 @@ func getOwnedNotesSQL(username string) (notes []Note) {
 	return notes
 }
 
-//SQL for getting all of the notes that the user is part of
+//===================Get Part Of Notes=============================
+
 func getPartOfNotesSQL(username string) (notes []Note) {
 	db := connectDatabase()
 	defer db.Close()
@@ -409,7 +411,8 @@ func getPartOfNotesSQL(username string) (notes []Note) {
 	return notes
 }
 
-//SQL for Getting Owned note
+//===================Get Single Owned Note=============================
+
 func getOwnedNoteSQL(noteid string, username string) (ownedNote Note) {
 
 	//Connect to database
@@ -436,7 +439,8 @@ func getOwnedNoteSQL(noteid string, username string) (ownedNote Note) {
 	return note
 }
 
-//SQL for getting note that user is part of
+//===================Get Single Part Of Note=============================
+
 func getPartOfNoteSQL(noteid string, username string) (note Note) {
 	//Connect to database
 	db := connectDatabase()
@@ -488,6 +492,8 @@ func readPermissionsSQL(username string, noteid string, read string) bool {
 
 }
 
+//===================Check Permissions============================
+
 func checkWritePermissionsSQL(username string, noteid string, write string) bool {
 	//Connect to database
 	db := connectDatabase()
@@ -508,7 +514,6 @@ func checkWritePermissionsSQL(username string, noteid string, write string) bool
 		log.Panic(err)
 	}
 
-	//Check the permission
 	if write == "t" {
 		return true
 	}
@@ -516,6 +521,10 @@ func checkWritePermissionsSQL(username string, noteid string, write string) bool
 	return false
 }
 
+//=================== WRONG =============================
+// ----------------------------------------------------------------------------------------------------------------------
+// Travis this code doesnt make sense. you are selecting note owner where note owner equals username you are passing to query. therefore getting a return of something that you already have
+// ---------------------------------------------------------------------------
 func noteOwnerSQL(username string, noteid string, owner string) bool {
 	db := connectDatabase()
 	defer db.Close()
