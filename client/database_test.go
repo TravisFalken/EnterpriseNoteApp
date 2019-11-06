@@ -36,7 +36,7 @@ func TestDatabase(t *testing.T) {
 	if assert.NotNil(db) {
 
 		// Test Add user, This user is used in testing
-		assert.Equal("Added user", addUserSQL(newUser), "Should return added user success message")
+		assert.True(addUserSQL(newUser), "Should return added user success")
 		// tests utilizing user start here
 
 		// Test user name can be found on database
@@ -46,8 +46,10 @@ func TestDatabase(t *testing.T) {
 		assert.True(validatePass("password", "testUserName"), "User should exist")
 
 		// Test Add new note. this note will be used in testing
-		assert.Equal("New Note Added", addNoteSQL(newNote1), "Should return success message")
-		assert.Equal("New Note Added", addNoteSQL(newNote2), "Should return success message")
+		note1ID := addNoteSQL(newNote1)
+		assert.NotEmpty(note1ID, "Should return note id")
+		note2ID := addNoteSQL(newNote2)
+		assert.NotEmpty(note2ID, "Should return note id")
 		// tests utilizing note start here
 
 		// list of notes created for test functions. Testing list all notes
