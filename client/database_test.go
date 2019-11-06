@@ -39,6 +39,10 @@ func TestDatabase(t *testing.T) {
 	db := connectDatabase()
 	defer db.Close()
 
+	// -------------------------------------------------------------
+	// Database testing. 100% function coverage
+	// -------------------------------------------------------------
+
 	// Initial test that database is there and connection can be made
 	if assert.NotNil(db) {
 
