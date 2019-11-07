@@ -70,7 +70,7 @@ func createNote(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//====================EDIT NOTE PAGE======================================
+//====================EDIT NOTE PAGE================================================
 func editNote(w http.ResponseWriter, r *http.Request) {
 	//Make sure user is still logged in
 	if userStillLoggedIn(r) {
