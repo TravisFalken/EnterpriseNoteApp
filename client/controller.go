@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -951,4 +953,53 @@ func validateInput(input string) bool {
 	}
 
 	return true
+}
+
+////////////////ANALYSE SECTION//////////////
+
+//Show a note that the user wants to analyse
+func showAnalyseNote(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		var note Note
+
+		note = getNoteToAnalyse(r)
+
+		tpl.ExecuteTemplate(w, "analyseNote.gohtml", note)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//Analyse a note that the user has choosen
+func analyseNote(w http.ResponseWriter, r *http.Request) {
+	if userStillLoggedIn(r) {
+		//Get noote to be analises
+		note = getNoteToAnalyse(r)
+		//get pattern from form
+		pattern := r.FormValue("pattern")
+		log.Println("Note Body: " + note.NoteBody) // for testing
+		log.Println("Pattern: " + pattern)         // for testing
+		//See how many times pattern is in the note body
+		count := strconv.Itoa(strings.Count(note.NoteBody, pattern))
+
+		//create prompt
+		alert := `<script>
+					alert("` + pattern + ` is in ` + note.NoteTitle + ` ` + count + ` times");
+					window.location.href="/analyseNote/` + strconv.Itoa(note.NoteID) + `";
+					</script>`
+		w.Write([]byte(alert))
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+//Get note to analyse
+func getNoteToAnalyse(r *http.Request) (note Note) {
+	if noteOwner(r) {
+		note = getOwnedNote(r)
+	} else {
+		note = getPartOfNote(r)
+	}
+
+	return note
 }

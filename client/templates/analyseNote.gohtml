@@ -84,34 +84,15 @@
                 <div class="col-xs-12">
                     <div class="card">
                         <div class="card-header">
-                            {{if .Read}}
-                            <input type="text" id="title" name="title" form="editForm" value="{{.NoteTitle}}" disabled>
-                            {{else}}
-                            <input type="text" id="title" name="title" form="editForm" value="{{.NoteTitle}}">
-                            {{end}}
+                            <h2 class="text-header">Analyse: {{.NoteTitle}}</h2>
                         </div>
                         <div class="card-body">
-                            <form id="editForm" action="/updateNote/{{.NoteID}}" method="POST">
-                                <label>Body</label>
-                                {{if .Write}}
-                                {{if eq .Write "t"}}
-                                <textarea name="body">{{.NoteBody}}</textarea>
-                                <button type="button" onclick="window.location.href='/listNotes';"
+                            <form id="analyseForm" action="/analyseNote/{{.NoteID}}" method="POST">
+                                <label>Pattern To search For</label>
+                                <input type="text" name="pattern" placeholder="Enter pattern">
+                                <button type="button" onclick="window.location.href='/editNote/{{.NoteID}}';"
                                     id="cancelBtn">Cancel</button>
-                                <button type="submit" onclick="updateNote({{.NoteID}})" id="updateBtn"
-                                    form="editForm">Update</button>
-                                {{else}}
-                                <textarea name="body" disabled>{{.NoteBody}}</textarea>
-                                {{end}}
-                                {{else}}
-                                <textarea name="body">{{.NoteBody}}</textarea>
-                                <button type="button" onclick="window.location.href='/listNotes';"
-                                    id="cancelBtn">Cancel</button>
-                                <button type="submit" id="updateBtn" form="editForm">Update</button>
-                                <button type="button"  onclick="window.location.href='/analyseNote/{{.NoteID}}'" id="anylyseBtn">Analyse Note</button>
-                                
-
-                                {{end}}
+                                <button type="submit" id="updateBtn" form="analyseForm">Analyse</button>
                             </form>
                         </div>
                         <div class="card-footer text-muted">

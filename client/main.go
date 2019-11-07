@@ -42,7 +42,8 @@ func main() {
 	router.HandleFunc("/deleteNote/{id}", deleteNote).Methods("GET")  //Changed Method from delete to Get because browsers don't support delete method
 	router.HandleFunc("/updateNote/{id}", updateNote).Methods("POST") //Updates a note had to change from PUT to POST becasue of formData bug
 	router.HandleFunc("/searchNotes", searchNotePartial).Queries("search", "{search}").Methods("GET")
-	//router.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
+	router.HandleFunc("/analyseNote/{id}", showAnalyseNote).Methods("GET")
+	router.HandleFunc("/analyseNote/{id}", analyseNote).Methods("POST")
 	router.PathPrefix("/javascript/").Handler(http.StripPrefix("/javascript/", http.FileServer(http.Dir("./javascript")))) // Handler for serving files within the javascript folder
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))                      //handler for serving files within the css folder
 
