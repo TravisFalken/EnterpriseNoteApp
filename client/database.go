@@ -1011,28 +1011,6 @@ func removeGroup(groupid string) bool {
 	return false
 }
 
-//get the group title
-func getGroupTitle(groupid string) (title string) {
-	//Connect to database
-	db := connectDatabase()
-	defer db.Close()
-
-	//prepare statement
-	stmt, err := db.Prepare("SELECT group_title FROM _group WHERE group_id = $1;")
-	if err != nil {
-		log.Panic(err)
-	}
-	err = stmt.QueryRow(groupid).Scan(&title)
-	if err == sql.ErrNoRows {
-		return title
-	}
-	if err != nil {
-		log.Panic(err)
-		return title
-	}
-	return title
-}
-
 //edit a group and save it in the database
 func editGroup(groupid string, write string) bool {
 	//Connect to database
@@ -1093,4 +1071,67 @@ func getAvaliableGroupUsers(groupid string, username string) (users []string) {
 	}
 
 	return users
+}
+
+//=======================Add session id to user======================================================
+func addSessionToUser(user User, sessionID string) bool {
+
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE _user SET session_id=$1 WHERE user_name=$2;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	result, err := stmt.Exec(sessionID, user.UserName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Validate that session has been added to user
+	count, err := result.RowsAffected()
+	//Session was not added to user
+	if err == sql.ErrNoRows {
+		log.Panic(err)
+		return false
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+	//if count greater than 0 session has been added to user
+	if count > 0 {
+		return true
+	}
+	return false
+}
+
+//==================gets the user from database with the session id================================
+func getUser(sessionid string) (user User) {
+
+	//Connect to db
+	db := connectDatabase()
+	defer db.Close()
+
+	//Prepare query for getting user with the session id
+	stmt, err := db.Prepare("SELECT user_name,given_name,family_name, email, password, session_id  FROM _user WHERE session_id = $1;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	//Query the database to get a user that matches the session
+	rows, err := stmt.Query(sessionid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//run through the row
+	for rows.Next() {
+		err = rows.Scan(&user.UserName, &user.GivenName, &user.FamilyName, &user.Email, &user.Password, &user.SessionID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	}
+
+	return user
+
 }

@@ -197,40 +197,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 //====================ADD USER=====================================
 func addUser(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println("Entered addUser()") // For testing // old add user
 
-	// var newUser User
-	// //Get user information out of body of HTTP
-	// reqBody, _ := ioutil.ReadAll(r.Body)
-	//json.Unmarshal(reqBody, &newUser)
-
-	// new add user
-
-	//Not Sure
-	/*
-		fmt.Println("Entered addUser()") // For testing
-
-		var newUser User
-		newUser.UserName = r.FormValue("user_name")
-		newUser.GivenName = r.FormValue("given_name")
-		newUser.FamilyName = r.FormValue("family_name")
-		newUser.Email = r.FormValue("email")
-		newUser.Password = r.FormValue("password")
-		if !userNameExists(newUser.UserName) {
-			fmt.Fprintf(w, addUserSQL(newUser))
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-		} else {
-			fmt.Fprintf(w, "Username already exists")
-		}
-	*/
 	fmt.Println("Entered addUser()") // For testing
 
 	var newUser User
-	//Get user information out of body of HTTP
-	/*
-		reqBody, _ := ioutil.ReadAll(r.Body)
-		json.Unmarshal(reqBody, &newUser)
-	*/
 
 	newUser.UserName = r.FormValue("user_name")
 	newUser.GivenName = r.FormValue("given_name")
