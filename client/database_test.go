@@ -163,6 +163,15 @@ func TestDatabase(t *testing.T) {
 		// Test available group users
 		assert.NotEqual(newUser2.UserName, getAvaliableGroupUsers(groupID, newUser1.UserName)[0], "Should not return user 2 as user 2 is part of group already")
 
+		// Test edit group
+		assert.True(editGroup(groupID, "t"), "Should return true")
+
+		// Test add Session id
+		assert.True(addSessionToUser(newUser1, "testSessionID"), "Should return true for id added")
+
+		// Test get user by session id
+		assert.NotEmpty(getUser("testSessionID"), "should return user 1")
+
 		// all users, groups, group users, notes and permissions tests end here ------------------------------------------------------------
 
 		// Test remove group users
