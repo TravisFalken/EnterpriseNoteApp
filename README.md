@@ -6,12 +6,22 @@ to deploy as dev through Docker CLI
 
 ### Client standalone:
 
+Testing version
+
         docker build -f Dockerfile.dev -t my-golang-app .
         docker run -p 8080:8080 -it --rm --name my-running-app my-golang-app  
 
 Application will not be able to talk to database in this state making database.go tests fail
 
+---
+Running Version
+
+        docker build -t my-golang-app .
+        docker run -p 8080:8080 -it --rm --name my-running-app my-golang-app  
+
 Home page can be reached at < docker ip address >:8080
+
+This state cannot talk to database so will cause errors when sdatabase is called
 
 
 ### Full local deployment using docker-compose
