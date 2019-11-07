@@ -36,6 +36,12 @@ func TestDatabase(t *testing.T) {
 	newNote2.NoteOwner = "testUserName1"
 	newNote2.CreatedDate = "2019-11-03"
 
+	var newGroup Group
+	newGroup.GroupTitle = "testGroup"
+	newGroup.GroupOwner = newUser1.UserName
+	newGroup.GroupRead = "t"
+	newGroup.GroupWrite = "t"
+
 	db := connectDatabase()
 	defer db.Close()
 
@@ -125,7 +131,55 @@ func TestDatabase(t *testing.T) {
 		// Test update part of note
 		assert.True(updatePartOfNoteSQL(note1ID, "Test Update"), "Should be able to update")
 
-		// all users, notes and permissions tests end here ------------------------------------------------------------
+		// Test Create Group
+		groupID := createNewGroup(newGroup.GroupTitle, newGroup.GroupOwner, newGroup.GroupRead, newGroup.GroupWrite)
+		assert.NotEmpty(groupID, "should hold created group id")
+		// Group tests start here --------------------------------------------------------------------------------------------
+
+		// Test getGroup
+		assert.Equal(newGroup.GroupTitle, getGroup(groupID).GroupTitle, "Title should match")
+
+		// Test validate group owner
+		assert.True(validateGroupOwner(newUser1.UserName, groupID), "User1 should be owner of group")
+
+		// Test save group user
+		assert.True(saveGroupUserSQL(groupID, newUser2.UserName), "User 2 should be added to group")
+		// Tests with group user start here ----------------------------------------------------------------------------------
+
+		// Test get group users
+		assert.Equal(newUser2.UserName, getGroupUsers(groupID)[0], "Should return user 2 as group user")
+
+		// Test get all groups
+		assert.Equal(newGroup.GroupTitle, getAllGroups(newUser1.UserName)[0].GroupTitle, "Title should match")
+
+		// Test getGroup priviliges
+		r, w := getGroupPrivileges(groupID)
+		assert.Equal(r, newGroup.GroupRead, "Should return the same value as new group read")
+		assert.Equal(w, newGroup.GroupWrite, "Should return the same value as new group write")
+
+		// Test edit group priviliges
+		assert.True(editGroupPrivileges(groupID, "f", "t"), "Should return true as group can be edited")
+
+		// Test available group users
+		assert.NotEqual(newUser2.UserName, getAvaliableGroupUsers(groupID, newUser1.UserName)[0], "Should not return user 2 as user 2 is part of group already")
+
+		// Test edit group
+		assert.True(editGroup(groupID, "t"), "Should return true")
+
+		// Test add Session id
+		assert.True(addSessionToUser(newUser1, "testSessionID"), "Should return true for id added")
+
+		// Test get user by session id
+		assert.NotEmpty(getUser("testSessionID"), "should return user 1")
+
+		// all users, groups, group users, notes and permissions tests end here ------------------------------------------------------------
+
+		// Test remove group users
+		assert.True(removeGroupUser(groupID, newUser2.UserName), "Should retrurn true as group user is removed")
+
+		// Test remove group
+		assert.True(removeGroup(groupID), "Should remove group")
+
 		// Test remove permissions
 		assert.True(removePrivilege(note1ID, newUser2.UserName), "permissions should be removed on note 1")
 		assert.True(removePrivilege(note2ID, newUser2.UserName), "permissions should be removed on note 2")
