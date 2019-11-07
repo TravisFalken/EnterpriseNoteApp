@@ -76,30 +76,35 @@
     </header>
     <main>
         <div class="container">
-            <form action="/editPrivileges/{{.NoteID}}" method="POST" id="editPrivilegesForm">
-                {{with .Privileges}}
-                {{range .}}
-                <input type="hidden" name="user" value="{{.Username}}">
-                <div class="card">
-                    <h5 class="card-header">{{.Username}}</h5>
-                    <div class="card-body">
-                        <input type="checkbox" checked name="includedCheckbox_{{.Username}}">
-                        <label for="includedCheckbox">Include</label>
-                        <div class="dropdown-divider"></div>
-                        {{if eq .Write "t"}}
-                        <input type="checkbox" checked name="writeCheckbox_{{.Username}}">
-                        <label for="writeCheckbox">Edit Note</label>
-                        {{else}}
-                        <input type="checkbox" name="writeCheckbox_{{.Username}}">
-                        <label for="writeCheckbox">Edit Note</label>
+        <div class="row">
+                <div class="col-xs-12">
+                    <form action="/editPrivileges/{{.NoteID}}" method="POST" id="editPrivilegesForm">
+                        {{with .Privileges}}
+                        {{range .}}
+                        <input type="hidden" name="user" value="{{.Username}}">
+                        <div class="card">
+                            <h5 class="card-header">{{.Username}}</h5>
+                            <div class="card-body">
+                                <input type="checkbox" checked name="includedCheckbox_{{.Username}}">
+                                <label for="includedCheckbox">Include</label>
+                                <div class="dropdown-divider"></div>
+                                {{if eq .Write "t"}}
+                                <input type="checkbox" checked name="writeCheckbox_{{.Username}}">
+                                <label for="writeCheckbox">Edit Note</label>
+                                {{else}}
+                                <input type="checkbox" name="writeCheckbox_{{.Username}}">
+                                <label for="writeCheckbox">Edit Note</label>
+                                {{end}}
+                            </div>
+                        </div>
                         {{end}}
-                    </div>
+                        {{end}}
+                    </form>
+                <button class="btn btn-primary" type="submit" form="editPrivilegesForm">Save Privileges</button>
+                <button class="btn btn-primary" type="button" onclick="window.location.href='/listNotes';">Cancel</button>
                 </div>
-                {{end}}
-                {{end}}
-            </form>
-            <button type="submit" form="editPrivilegesForm">Save Privileges</button>
-            <button type="button" onclick="window.location.href='/listNotes';">Cancel</button>
+            </div>
+           
         </div>
     </main>
 </body>
