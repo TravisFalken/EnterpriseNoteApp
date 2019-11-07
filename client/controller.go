@@ -367,7 +367,6 @@ func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 	//get the id of the note the user wants to delete
 	noteid := getID(r)
 	username := getUserName(r)
-
 	return deleteSpecificNoteSQL(noteid, username)
 }
 
@@ -479,7 +478,6 @@ func updateOwnedNote(r *http.Request) (success bool) {
 
 	//validate that there is text in title
 	if validateInput(title) {
-
 		if updateOwnedNoteSQL(title, body, noteid, username) {
 			return true
 		}
@@ -538,7 +536,6 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 				if !addPermissionSQL(noteid, user, read, write) {
 					http.Error(w, "Database Error", http.StatusInternalServerError)
 				}
-
 			}
 
 		}

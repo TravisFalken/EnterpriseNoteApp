@@ -200,7 +200,7 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	db := connectDatabase()
 	defer db.Close()
 
-	bodyText += ":*" //for testing
+	bodyText += ":*" 
 	stmt, err := db.Prepare(`
 		SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner 
 		FROM _note 

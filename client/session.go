@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	_ "github.com/lib/pq"
@@ -18,7 +17,6 @@ func newSessionid() string {
 func userStillLoggedIn(req *http.Request) bool {
 	sessionid := getSession(req)
 	user := getUser(sessionid)
-	log.Println("Database Sessionid And Client ID: " + user.SessionID + "|||" + sessionid) // for testing
 	if user.SessionID == sessionid {
 		return true
 	}
