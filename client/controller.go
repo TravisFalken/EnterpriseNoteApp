@@ -351,7 +351,6 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 		notes.OwnedNotes = partialSeachOwnedTitleSQL(bodyText, username)
 		//get notes part of that match the pattern
 		notes.PartOfNotes = partialSearchPartOfTitleSQL(bodyText, username)
-		fmt.Println(notes)
 		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
 		//User is not logged in
 	} else {
@@ -366,7 +365,6 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 
 	//get the id of the note the user wants to delete
-	//ASK floyd if we ca cut out deleteSpecificNote method and go straight to deleteSpecificNoteSQL
 	noteid := getID(r)
 	username := getUserName(r)
 	return deleteSpecificNoteSQL(noteid, username)
@@ -537,8 +535,6 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 
 		var read string
 		var write string
-		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
 
 		users := r.Form["user"]
 		for _, user := range users {
@@ -546,7 +542,6 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 			includedCheckbox := r.FormValue("includedCheckbox_" + user)
 			//Check that the user has been included
 			if includedCheckbox != "" {
-				log.Println("User: " + user)
 				read = "t"
 				writeCheckbox := r.FormValue("writeCheckbox_" + user)
 				//Check that the user has write privlages
@@ -575,8 +570,6 @@ func editPrivileges(w http.ResponseWriter, r *http.Request) {
 		var included string
 		var writeValue string
 		var write string
-		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
 		noteid := getID(r)
 		users := r.Form["user"]
 		for _, user := range users {
