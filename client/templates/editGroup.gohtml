@@ -40,9 +40,6 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -52,6 +49,16 @@
                             <a class="dropdown-item" href="/createNote">Create Note</a>
                             <a class="dropdown-item" href="/listNotes">List Notes</a>
                             <div class="dropdown-divider"></div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Settings
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="settingsDropdown">
+                            <a class="dropdown-item" href="/viewGroups">Saved Groups</a>
+                            <a class="dropdown-item" href="/createGroup">Create Group</a>
                         </div>
                     </li>
                 </ul>
@@ -72,35 +79,36 @@
                     -->
     </header>
     <main>
-     <div class="container">
+        <div class="container">
             <div class="row">
                 <div class="col-xs-12">
-                   <div class="card">
+                    <div class="card">
                         <div class="card-header">
                             <h2 class="card-title">{{.GroupTitle}}</h2>
                         </div>
                         <div class="card-body">
                             <form id="editForm" action="/updateGroup/{{.GroupID}}" method="POST">
 
-                                    {{if eq .GroupWrite "t"}}
-                                        <input type="checkbox" checked name="writeCheckbox">
-                                        {{else}}
-                                            <input type="checkbox" name="writeCheckbox">
-                                            
-                                    {{end}}
-                                    <label for="writeCheckbox">Users Able to Edit Note</label>
-                                    <br><br>
-                                    <button type="button" onclick="window.location.href='/viewGroups';" id="cancelBtn">Cancel</button>
-                                    <button type="submit" id="updateBtn" form="editForm">Update</button>
-                                    
+                                {{if eq .GroupWrite "t"}}
+                                <input type="checkbox" checked name="writeCheckbox">
+                                {{else}}
+                                <input type="checkbox" name="writeCheckbox">
+
+                                {{end}}
+                                <label for="writeCheckbox">Users Able to Edit Note</label>
+                                <br><br>
+                                <button type="button" onclick="window.location.href='/viewGroups';"
+                                    id="cancelBtn">Cancel</button>
+                                <button type="submit" id="updateBtn" form="editForm">Update</button>
+
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-    <main>
+
+        <main>
 </body>
 
 </html>

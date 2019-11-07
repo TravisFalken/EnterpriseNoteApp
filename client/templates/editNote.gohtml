@@ -40,9 +40,6 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -52,6 +49,16 @@
                             <a class="dropdown-item" href="/createNote">Create Note</a>
                             <a class="dropdown-item" href="/listNotes">List Notes</a>
                             <div class="dropdown-divider"></div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Settings
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="settingsDropdown">
+                            <a class="dropdown-item" href="/viewGroups">Saved Groups</a>
+                            <a class="dropdown-item" href="/createGroup">Create Group</a>
                         </div>
                     </li>
                 </ul>
@@ -72,35 +79,38 @@
                     -->
     </header>
     <main>
-     <div class="container">
+        <div class="container">
             <div class="row">
                 <div class="col-xs-12">
-                   <div class="card">
+                    <div class="card">
                         <div class="card-header">
                             {{if .Read}}
-                                <input type="text" id="title" name="title" form="editForm" value="{{.NoteTitle}}" disabled>
+                            <input type="text" id="title" name="title" form="editForm" value="{{.NoteTitle}}" disabled>
                             {{else}}
-                                <input type="text" id="title" name="title" form="editForm" value="{{.NoteTitle}}">
+                            <input type="text" id="title" name="title" form="editForm" value="{{.NoteTitle}}">
                             {{end}}
                         </div>
                         <div class="card-body">
                             <form id="editForm" action="/updateNote/{{.NoteID}}" method="POST">
                                 <label>Body</label>
                                 {{if .Write}}
-                                    {{if eq .Write "t"}}
-                                        <textarea name="body">{{.NoteBody}}</textarea>
-                                        <button type="button" onclick="window.location.href='/listNotes';" id="cancelBtn">Cancel</button>
-                                        <button type="submit" onclick="updateNote({{.NoteID}})" id="updateBtn" form="editForm">Update</button>
-                                        {{else}}
-                                            <textarea name="body" disabled>{{.NoteBody}}</textarea>
-                                    {{end}}
+                                {{if eq .Write "t"}}
+                                <textarea name="body">{{.NoteBody}}</textarea>
+                                <button type="button" onclick="window.location.href='/listNotes';"
+                                    id="cancelBtn">Cancel</button>
+                                <button type="submit" onclick="updateNote({{.NoteID}})" id="updateBtn"
+                                    form="editForm">Update</button>
                                 {{else}}
-                                    <textarea name="body">{{.NoteBody}}</textarea>
-                                    <button type="button" onclick="window.location.href='/listNotes';" id="cancelBtn">Cancel</button>
-                                    <button type="submit" id="updateBtn" form="editForm">Update</button>
-                                    <button type="button" id="addPrivileges">Add Participants</button>
-                                    <button type="button" id="editPrivileges">Edit Privileges</button>
-                                    
+                                <textarea name="body" disabled>{{.NoteBody}}</textarea>
+                                {{end}}
+                                {{else}}
+                                <textarea name="body">{{.NoteBody}}</textarea>
+                                <button type="button" onclick="window.location.href='/listNotes';"
+                                    id="cancelBtn">Cancel</button>
+                                <button type="submit" id="updateBtn" form="editForm">Update</button>
+                                <button type="button" id="addPrivileges">Add Participants</button>
+                                <button type="button" id="editPrivileges">Edit Privileges</button>
+
                                 {{end}}
                             </form>
                         </div>
@@ -111,8 +121,8 @@
                 </div>
             </div>
         </div>
-        
-    <main>
+
+        <main>
 </body>
 
 </html>

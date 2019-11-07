@@ -38,9 +38,6 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -58,7 +55,8 @@
                             Settings
                         </a>
                         <div class="dropdown-menu" aria-labelledby="settingsDropdown">
-                            <a class="dropdown-item" href="#">Saved Premissions</a>
+                            <a class="dropdown-item" href="/viewGroups">Saved Groups</a>
+                            <a class="dropdown-item" href="/createGroup">Create Group</a>
                         </div>
                     </li>
                 </ul>
@@ -77,31 +75,32 @@
             </nav>
 
             -->
-            <h1>All of Your Groups</h1>
+        <h1>All of Your Groups</h1>
     </header>
     <main>
         {{range .}}
         <div class="card text-center">
-                <div class="card-header">
-                    {{.GroupTitle}}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{.GroupTitle}}</h5>
-                    {{if eq .GroupWrite "t"}}
-                        <p class="card-text">Write Permissions: <b>True</b></p>
-                    {{else}}
-                    <p class="card-text">Write Permissions: <b>False</b></p>
-                    {{end}}
-                    <a href="#" class="btn btn-primary" onclick="viewGroup({{.GroupID}})">View Group</a>
-                    <a href="#" class="btn btn-primary" onclick="viewaddGroupUsers({{.GroupID}})">Add Users</a>
-                    <a href="#" class="btn btn-primary" onclick="editGroupUsers({{.GroupID}})">Edit Users</a>
-                    <a href="#" class="btn btn-primary" onclick="deleteGroup({{.GroupID}})">Delete Group</a>
-                </div>
-                <div class="card-footer text-muted">
-                    <p>Owner: {{.GroupOwner}}</p>
-                </div>
+            <div class="card-header">
+                {{.GroupTitle}}
             </div>
+            <div class="card-body">
+                <h5 class="card-title">{{.GroupTitle}}</h5>
+                {{if eq .GroupWrite "t"}}
+                <p class="card-text">Write Permissions: <b>True</b></p>
+                {{else}}
+                <p class="card-text">Write Permissions: <b>False</b></p>
+                {{end}}
+                <a href="#" class="btn btn-primary" onclick="viewGroup({{.GroupID}})">View Group</a>
+                <a href="#" class="btn btn-primary" onclick="viewaddGroupUsers({{.GroupID}})">Add Users</a>
+                <a href="#" class="btn btn-primary" onclick="editGroupUsers({{.GroupID}})">Edit Users</a>
+                <a href="#" class="btn btn-primary" onclick="deleteGroup({{.GroupID}})">Delete Group</a>
+            </div>
+            <div class="card-footer text-muted">
+                <p>Owner: {{.GroupOwner}}</p>
+            </div>
+        </div>
         {{end}}
     </main>
 </body>
+
 </html>

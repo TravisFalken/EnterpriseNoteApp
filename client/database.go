@@ -32,7 +32,10 @@ func userNameExists(username string) bool {
 	defer db.Close()
 
 	//Prepare query to check if the username already exists
-	getUserName, err := db.Prepare("Select user_name FROM _user WHERE user_name = $1;")
+	getUserName, err := db.Prepare(`
+		Select user_name 
+		FROM _user 
+		WHERE user_name = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +59,10 @@ func validatePass(password string, username string) bool {
 	defer db.Close()
 
 	//prepare statement to check for password
-	stmt, err := db.Prepare("SELECT password FROM _user WHERE password = $1 AND user_name = $2;")
+	stmt, err := db.Prepare(`
+		SELECT password 
+		FROM _user 
+		WHERE password = $1 AND user_name = $2;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,7 +94,9 @@ func addUserSQL(newUser User) bool {
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
 		log.Println("Entered add user if statement")
-		stmt, err := db.Prepare("INSERT INTO _user(user_name, password, email, given_name, family_name) VALUES($1,$2,$3,$4,$5);")
+		stmt, err := db.Prepare(`
+			INSERT INTO _user(user_name, password, email, given_name, family_name)
+			VALUES($1,$2,$3,$4,$5);`)
 		if err != nil {
 			log.Panic(err)
 			return false
@@ -115,7 +123,10 @@ func addNoteSQL(newNote Note) (noteid string) {
 	defer db.Close()
 
 	//Prepare insert to stop SQL injections
-	stmt, err := db.Prepare("INSERT INTO _note (title, body, date_created, note_owner) VALUES($1,$2,$3,$4) RETURNING note_id;")
+	stmt, err := db.Prepare(`
+		INSERT INTO _note (title, body, date_created, note_owner) 
+		VALUES($1,$2,$3,$4) 
+		RETURNING note_id;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,7 +149,11 @@ func listAllNotesSQL(username string) []Note {
 	//Connect to db
 	db := connectDatabase()
 	defer db.Close()
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, _note.note_owner, _note.title, _note.body, _note.date_created 
+		FROM _note 
+		LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) 
+		WHERE _note.note_owner = $1 OR _note_privileges.user_name = $1;`)
 	var note Note
 	rows, err := stmt.Query(username)
 	for rows.Next() {
@@ -162,7 +177,9 @@ func listAllUsersSQL(loggedInUser string) []string {
 	defer db.Close()
 
 	//Send query to the db
-	rows, err := db.Query("SELECT user_name FROM _user;")
+	rows, err := db.Query(`
+		SELECT user_name 
+		FROM _user;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -185,7 +202,11 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	defer db.Close()
 
 	bodyText += ":*" //for testing
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner 
+		FROM _note 
+		LEFT OUTER JOIN _note_privileges ON (_note.note_id = _note_privileges.note_id) 
+		WHERE body ~ $2 AND _note.note_owner = $1 OR _note_privileges.user_name = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -213,7 +234,10 @@ func partialSeachOwnedTitleSQL(searchText string, username string) (ownedNotes [
 	db := connectDatabase()
 	defer db.Close()
 	searchText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note WHERE _note.title ~ $2 AND _note.note_owner = $1;")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner 
+		FROM _note 
+		WHERE _note.title ~ $2 AND _note.note_owner = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -239,7 +263,11 @@ func partialSearchPartOfTitleSQL(titleText string, username string) (partOfNotes
 	db := connectDatabase()
 	defer db.Close()
 	titleText += ":*"
-	stmt, err := db.Prepare("SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner FROM _note_privileges JOIN _note ON _note_privileges.note_id = _note.note_id WHERE _note.title ~* $2 AND _note_privileges.user_name = $1")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner 
+		FROM _note_privileges 
+		JOIN _note ON _note_privileges.note_id = _note.note_id 
+		WHERE _note.title ~* $2 AND _note_privileges.user_name = $1`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -268,9 +296,9 @@ func deleteSpecificNoteSQL(noteid string, username string) (noteDeleted bool) {
 	db := connectDatabase()
 	defer db.Close()
 
-	//get the actually username out of the cookie
-
-	stmt, err := db.Prepare("DELETE FROM _note WHERE note_owner=$1 AND note_id=$2;")
+	stmt, err := db.Prepare(`
+		DELETE FROM _note 
+		WHERE note_owner=$1 AND note_id=$2;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -290,9 +318,9 @@ func deleteAllUserNotesSQL(username string) (noteDeleted bool) {
 	db := connectDatabase()
 	defer db.Close()
 
-	//get the actually username out of the cookie
-
-	stmt, err := db.Prepare("DELETE FROM _note WHERE note_owner=$1;")
+	stmt, err := db.Prepare(`
+		DELETE FROM _note 
+		WHERE note_owner=$1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -314,7 +342,9 @@ func deleteSpecificUserSQL(username string) (noteDeleted bool) {
 
 	//get the actually username out of the cookie
 
-	stmt, err := db.Prepare("DELETE FROM _user WHERE user_name=$1;")
+	stmt, err := db.Prepare(`
+		DELETE FROM _user 
+		WHERE user_name=$1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -327,14 +357,18 @@ func deleteSpecificUserSQL(username string) (noteDeleted bool) {
 	return false
 }
 
-//SQL For getting all of the notes the user has created
+//===================Get Owned Notes=============================
+
 func getOwnedNotesSQL(username string) (notes []Note) {
 	//Connect to Database
 	db := connectDatabase()
 	defer db.Close()
 	var note Note
 	//Prepare Statment // needs owner for testing
-	stmt, err := db.Prepare("SELECT _note.note_id, title, body, date_created, note_owner FROM _note WHERE note_owner=$1")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, title, body, date_created, note_owner 
+		FROM _note 
+		WHERE note_owner=$1`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -350,7 +384,8 @@ func getOwnedNotesSQL(username string) (notes []Note) {
 	return notes
 }
 
-//SQL for getting all of the notes that the user is part of
+//===================Get Part Of Notes=============================
+
 func getPartOfNotesSQL(username string) (notes []Note) {
 	db := connectDatabase()
 	defer db.Close()
@@ -358,11 +393,10 @@ func getPartOfNotesSQL(username string) (notes []Note) {
 	var note Note
 	//prepare statement
 	stmt, err := db.Prepare(`
-	SELECT _note.note_id, title, body, date_created, note_owner FROM _note_privileges
-	JOIN _note
-	ON _note.note_id = _note_privileges.note_id
-	WHERE _note_privileges.user_name = $1;
-	`)
+		SELECT _note.note_id, title, body, date_created, note_owner FROM _note_privileges
+		JOIN _note
+		ON _note.note_id = _note_privileges.note_id
+		WHERE _note_privileges.user_name = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -377,7 +411,8 @@ func getPartOfNotesSQL(username string) (notes []Note) {
 	return notes
 }
 
-//SQL for Getting Owned note
+//===================Get Single Owned Note=============================
+
 func getOwnedNoteSQL(noteid string, username string) (ownedNote Note) {
 
 	//Connect to database
@@ -385,7 +420,10 @@ func getOwnedNoteSQL(noteid string, username string) (ownedNote Note) {
 	defer db.Close()
 
 	//prepare statment
-	stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created FROM _note WHERE note_owner = $1 AND note_id = $2;")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, note_owner, title, body, date_created 
+		FROM _note 
+		WHERE note_owner = $1 AND note_id = $2;`)
 	if err != nil {
 		log.Panic(err)
 		return note
@@ -401,13 +439,18 @@ func getOwnedNoteSQL(noteid string, username string) (ownedNote Note) {
 	return note
 }
 
-//SQL for getting note that user is part of
+//===================Get Single Part Of Note=============================
+
 func getPartOfNoteSQL(noteid string, username string) (note Note) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
 	//prepare statment
-	stmt, err := db.Prepare("SELECT _note.note_id, note_owner, title, body, date_created, read, write FROM _note JOIN _note_privileges ON _note.note_id = _note_privileges.note_id WHERE _note.note_id = $2 AND user_name = $1")
+	stmt, err := db.Prepare(`
+		SELECT _note.note_id, note_owner, title, body, date_created, read, write 
+		FROM _note 
+		JOIN _note_privileges ON _note.note_id = _note_privileges.note_id 
+		WHERE _note.note_id = $2 AND user_name = $1`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -421,12 +464,20 @@ func getPartOfNoteSQL(noteid string, username string) (note Note) {
 	return note
 }
 
+//===================Get read permissions=============================
+
 func readPermissionsSQL(username string, noteid string, read string) bool {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	stmt, err := db.Prepare("SELECT read FROM _note_privileges WHERE user_name = $1 AND note_id = $2")
-
+	stmt, err := db.Prepare(`
+		SELECT read 
+		FROM _note_privileges 
+		WHERE user_name = $1 AND note_id = $2`)
+	//if no rows were returned
+	if err == sql.ErrNoRows {
+		return false
+	}
 	if err != nil {
 		log.Panic(err)
 	}
@@ -447,12 +498,17 @@ func readPermissionsSQL(username string, noteid string, read string) bool {
 
 }
 
+//===================Check Permissions============================
+
 func checkWritePermissionsSQL(username string, noteid string, write string) bool {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
 	//prepare statement
-	stmt, err := db.Prepare("SELECT write FROM _note_privileges WHERE user_name = $1 AND note_id = $2;")
+	stmt, err := db.Prepare(`
+		SELECT write 
+		FROM _note_privileges 
+		WHERE user_name = $1 AND note_id = $2;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -464,7 +520,6 @@ func checkWritePermissionsSQL(username string, noteid string, write string) bool
 		log.Panic(err)
 	}
 
-	//Check the permission
 	if write == "t" {
 		return true
 	}
@@ -472,11 +527,18 @@ func checkWritePermissionsSQL(username string, noteid string, write string) bool
 	return false
 }
 
+//=================== WRONG =============================
+// ----------------------------------------------------------------------------------------------------------------------
+// Travis this code doesnt make sense. you are selecting note owner where note owner equals username you are passing to query. therefore getting a return of something that you already have
+// ---------------------------------------------------------------------------
 func noteOwnerSQL(username string, noteid string, owner string) bool {
 	db := connectDatabase()
 	defer db.Close()
 
-	stmt, err := db.Prepare("SELECT note_owner FROM _note WHERE note_owner = $1 AND note_id = $2;")
+	stmt, err := db.Prepare(`
+		SELECT note_owner 
+		FROM _note 
+		WHERE note_owner = $1 AND note_id = $2;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -499,7 +561,13 @@ func getAvaliableUsersSQL(username string, noteid string) (users []string) {
 	var user string
 
 	//prepare statement
-	stmt, err := db.Prepare("SELECT _user.user_name FROM _user WHERE  _user.user_name NOT IN (SELECT user_name FROM _note_privileges WHERE _note_privileges.note_id = $1)")
+	stmt, err := db.Prepare(`
+		SELECT _user.user_name 
+		FROM _user 
+		WHERE  _user.user_name NOT IN (
+			SELECT user_name 
+			FROM _note_privileges 
+			WHERE _note_privileges.note_id = $1)`)
 	if err != nil {
 		log.Panic(err)
 		return users
@@ -527,7 +595,10 @@ func getNotePrivileges(noteid string) (privileges []Privlige) {
 	var newPrivilege Privlige
 
 	//prepare statment
-	stmt, err := db.Prepare("SELECT user_name, read, write FROM _note_privileges WHERE note_id = $1;")
+	stmt, err := db.Prepare(`
+		SELECT user_name, read, write 
+		FROM _note_privileges 
+		WHERE note_id = $1;`)
 	if err != nil {
 		log.Panic(err)
 		return privileges
@@ -553,7 +624,9 @@ func removePrivilege(noteid string, username string) bool {
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("DELETE FROM _note_privileges WHERE note_id = $1 AND user_name = $2;")
+	stmt, err := db.Prepare(`
+		DELETE FROM _note_privileges 
+		WHERE note_id = $1 AND user_name = $2;`)
 	if err != nil {
 		log.Panic(err)
 		return false
@@ -575,7 +648,10 @@ func updatePrivilege(noteid string, username string, write string) bool {
 	defer db.Close()
 
 	//Prepare statement
-	stmt, err := db.Prepare("UPDATE _note_privileges SET write = $1 WHERE note_id = $2 AND user_name = $3;")
+	stmt, err := db.Prepare(`
+		UPDATE _note_privileges 
+		SET write = $1 
+		WHERE note_id = $2 AND user_name = $3;`)
 	if err != nil {
 		log.Panic(err)
 		return false
@@ -601,7 +677,10 @@ func updateOwnedNoteSQL(title string, body string, noteid string, noteOwner stri
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("UPDATE _note SET title = $1, body = $2  WHERE note_id = $3 AND note_owner = $4;")
+	stmt, err := db.Prepare(`
+		UPDATE _note 
+		SET title = $1, body = $2  
+		WHERE note_id = $3 AND note_owner = $4;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -623,12 +702,19 @@ func updateOwnedNoteSQL(title string, body string, noteid string, noteOwner stri
 	return false
 }
 
+// -------------------------------------------------------------------------------------------------
+// ERROR HERE. This code is exactly the same as any update code. i understand that it is after an part of check in controller however it would be a better idea to have a generic update note query that is called to remove double ups
+// -------------------------------------------------------------------------------------------------
+
 //Sql for updating a note user is part of
 func updatePartOfNoteSQL(noteID string, body string) (success bool) {
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	stmt, err := db.Prepare("UPDATE _note SET body = $1 WHERE note_id = $2")
+	stmt, err := db.Prepare(`
+		UPDATE _note 
+		SET body = $1 
+		WHERE note_id = $2`)
 	result, err := stmt.Exec(body, noteID)
 	if err != nil {
 		log.Panic(err)
@@ -657,7 +743,9 @@ func addPermissionSQL(noteid string, user string, read string, write string) boo
 	defer db.Close()
 	log.Println("Entered add permissions sql") //for testing
 	//Prepare statment
-	stmt, err := db.Prepare("INSERT INTO _note_privileges(note_id,user_name, read, write) VALUES($1, $2, $3, $4);")
+	stmt, err := db.Prepare(`
+		INSERT INTO _note_privileges(note_id,user_name, read, write) 
+			VALUES($1, $2, $3, $4);`)
 	if err != nil {
 		log.Panic(err)
 		return false

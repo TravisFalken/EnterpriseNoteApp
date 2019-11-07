@@ -40,9 +40,6 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -52,12 +49,22 @@
                             <a class="dropdown-item" href="/createNote">Create Note</a>
                             <a class="dropdown-item" href="/listNotes">List Notes</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Settings
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="settingsDropdown">
+                            <a class="dropdown-item" href="/viewGroups">Saved Groups</a>
+                            <a class="dropdown-item" href="/createGroup">Create Group</a>
                         </div>
                     </li>
                 </ul>
                 <form class="form-inline my-2 my-lg-0" method="GET" action="/searchNotes">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" name="search" aria-label="Search">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" name="search"
+                        aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
             </div>
@@ -69,65 +76,70 @@
             <div class="row">
                 <div class="col-xs-12">
                     <section id="notesOwned">
-                    <h3>Notes You Own</h3>
+                        <h3>Notes You Own</h3>
+                        <div class="container">
+                            {{with .OwnedNotes}}
+
+                            {{if not .}}
+
+                            <h3>You do not own any notes</h3>
+
+                            {{else}}
+                            {{range .}}
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    Note Owner: You
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{.NoteTitle}}</h5>
+                                    <p class="card-text">{{.NoteBody}}</p>
+                                    <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">View
+                                        Note</a>
+                                    <a href="#" class="btn btn-primary" onclick="addUsersClicked({{.NoteID}})">Add
+                                        Users</a>
+                                    <a href="#" class="btn btn-primary" onclick="editPrivileges({{.NoteID}})">Edit
+                                        Privileges</a>
+                                    <a href="#" class="btn btn-primary" onclick="deleteNote({{.NoteID}})">Delete
+                                        Note</a>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <p>Date Created: {{.CreatedDate}}</p>
+                                </div>
+                            </div>
+
+                            {{end}}
+                            {{end}}
+                            {{end}}
+                        </div>
+                    </section>
+                    <h3>Notes you are Apart of</h3>
                     <div class="container">
-                        {{with .OwnedNotes}}
-
-                        {{if not .}}
-
-                        <h3>You do not own any notes</h3>
-
-                        {{else}}
-                        {{range .}}
-                        <div class="card text-center">
-                            <div class="card-header">
-                                Note Owner: You
+                        <section id="notesPartOf">
+                            {{with .PartOfNotes}}
+                            {{range .}}
+                            <p>test part of notes</p>
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    Note Owner: {{.NoteOwner}}
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{.NoteTitle}}</h5>
+                                    <p class="card-text">{{.NoteBody}}</p>
+                                    <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">View
+                                        Note</a>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <p>Date Created: {{.CreatedDate}}</p>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{.NoteTitle}}</h5>
-                                <p class="card-text">{{.NoteBody}}</p>
-                                <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">View Note</a>
-                                <a href="#" class="btn btn-primary" onclick="addUsersClicked({{.NoteID}})">Add Users</a>
-                                <a href="#" class="btn btn-primary" onclick="editPrivileges({{.NoteID}})">Edit Privileges</a>
-                                <a href="#" class="btn btn-primary" onclick="deleteNote({{.NoteID}})">Delete Note</a>
-                            </div>
-                            <div class="card-footer text-muted">
-                                <p>Date Created: {{.CreatedDate}}</p>
-                            </div>
-                        </div>
-
-                        {{end}}
-                        {{end}}
-                        {{end}}
+                            {{end}}
+                            {{end}}
                     </div>
-                </section>
-                <h3>Notes you are Apart of</h3>
-                <div class="container">
-                    <section id="notesPartOf">
-                        {{with .PartOfNotes}}
-                        {{range .}}
-                        <p>test part of notes</p>
-                        <div class="card text-center">
-                            <div class="card-header">
-                                Note Owner: {{.NoteOwner}}
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{.NoteTitle}}</h5>
-                                <p class="card-text">{{.NoteBody}}</p>
-                                <a href="#" class="btn btn-primary" onclick="editNotePage({{.NoteID}})">View Note</a>
-                            </div>
-                            <div class="card-footer text-muted">
-                                <p>Date Created: {{.CreatedDate}}</p>
-                            </div>
-                        </div>
-                        {{end}}
-                        {{end}}
-                </div>
-                </section>
+                    </section>
                 </div>
             </div>
         </div>
-        
+
     </main>
 </body>
 
