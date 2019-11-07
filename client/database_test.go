@@ -144,9 +144,18 @@ func TestDatabase(t *testing.T) {
 
 		// Test save group user
 		assert.True(saveGroupUserSQL(groupID, newUser2.UserName), "User 2 should be added to group")
+		// Tests with group user start here ----------------------------------------------------------------------------------
+
+		// Test get group users
+		assert.Equal(newUser2.UserName, getGroupUsers(groupID)[0], "Should return user 2 as group user")
 
 		// Test get all groups
 		assert.Equal(newGroup.GroupTitle, getAllGroups(newUser1.UserName)[0].GroupTitle, "Title should match")
+
+		// Test getGroup priviliges
+		r, w := getGroupPrivileges(groupID)
+		assert.Equal(r, newGroup.GroupRead, "Should return the same value as new group read")
+		assert.Equal(w, newGroup.GroupWrite, "Should return the same value as new group write")
 
 		// all users, groups, notes and permissions tests end here ------------------------------------------------------------
 
