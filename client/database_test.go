@@ -157,7 +157,16 @@ func TestDatabase(t *testing.T) {
 		assert.Equal(r, newGroup.GroupRead, "Should return the same value as new group read")
 		assert.Equal(w, newGroup.GroupWrite, "Should return the same value as new group write")
 
-		// all users, groups, notes and permissions tests end here ------------------------------------------------------------
+		// Test edit group priviliges
+		assert.True(editGroupPrivileges(groupID, "f", "t"), "Should return true as group can be edited")
+
+		// Test available group users
+		assert.NotEqual(newUser2.UserName, getAvaliableGroupUsers(groupID, newUser1.UserName)[0], "Should not return user 2 as user 2 is part of group already")
+
+		// all users, groups, group users, notes and permissions tests end here ------------------------------------------------------------
+
+		// Test remove group users
+		assert.True(removeGroupUser(groupID, newUser2.UserName), "Should retrurn true as group user is removed")
 
 		// Test remove group
 		assert.True(removeGroup(groupID), "Should remove group")
