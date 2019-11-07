@@ -296,7 +296,8 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 					http.Redirect(w, r, "/", http.StatusSeeOther)
 				}
 			}
-			fmt.Fprintf(w, "New Note Added")
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			// fmt.Fprintf(w, "New Note Added")
 			//User is not logged in
 		} else {
 			http.Redirect(w, r, "/createNote", http.StatusSeeOther)

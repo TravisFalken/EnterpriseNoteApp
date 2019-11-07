@@ -34,8 +34,11 @@
                 <div class="col-xs-12">
                   
                     <form action="/addGroup" method="POST" id="createGroupForm">
-                    <label for="title">Group Title</label>
-                    <input type="text" name="title" id="title" placeholder="Please enter the title of the Group">
+                    <div class="form-group>
+                        <label for="title">Group Title</label>
+                        <input class="form-control" type="text" name="title" id="title" placeholder="Please enter the title of the Group">
+                    </div>
+                    
                     <div class="users">
 
                         <div class="userSelect">
@@ -93,8 +96,8 @@
                     <label for="write_privilege">Users Can Edit A Note</label>
                     </form>
                     <br>
-                    <button type="submit" form="createGroupForm">Create</button>
-                    <button type="button" onclick="window.location.href='/home';">Cancel</button>
+                    <button class="btn btn-primary" type="submit" form="createGroupForm">Create</button>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='/home';">Cancel</button>
 
                 </div>
             </div>
