@@ -438,12 +438,6 @@ func getAvaliableUsers(r *http.Request) (users []string) {
 	return getAvaliableUsersSQL(username, noteid)
 }
 
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
-// TRAVIS. i dont understand what is happening here. and it seems either way you will return the same note. weather they pass the if statement or not
-
 //get note based on note id and user permissions
 func getPartOfNote(r *http.Request) (note Note) {
 	//Check to see if user has read permission or is note owner
@@ -458,10 +452,6 @@ func getPartOfNote(r *http.Request) (note Note) {
 	return note
 }
 
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-
 func getOwnedNote(r *http.Request) (note Note) {
 	if noteOwner(r) {
 
@@ -473,10 +463,6 @@ func getOwnedNote(r *http.Request) (note Note) {
 	}
 	return note
 }
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Update note that you own
 func updateOwnedNote(r *http.Request) (success bool) {
@@ -504,10 +490,6 @@ func updateOwnedNote(r *http.Request) (success bool) {
 	return false
 
 }
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------
-// CLEAR SQL TO DATABASE
-// ------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Update note you are part of
 func updatePartOfNote(r *http.Request) bool {
@@ -601,8 +583,6 @@ func getID(r *http.Request) (id string) {
 	id = mux.Vars(r)["id"]
 	return id
 }
-
-////////////GROUP PRIVILEGES SECTION/////////////////////
 
 //Displays HTML page for showing all groups that the user owns
 func viewAllSavedGroups(w http.ResponseWriter, r *http.Request) {
@@ -923,8 +903,6 @@ func validateInput(input string) bool {
 
 	return true
 }
-
-////////////////ANALYSE SECTION//////////////
 
 //Show a note that the user wants to analyse
 func showAnalyseNote(w http.ResponseWriter, r *http.Request) {
