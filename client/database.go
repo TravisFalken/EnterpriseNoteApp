@@ -93,7 +93,6 @@ func addUserSQL(newUser User) bool {
 	//Validate that username does not already exist
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
-		log.Println("Entered add user if statement")
 		stmt, err := db.Prepare(`
 			INSERT INTO _user(user_name, password, email, given_name, family_name)
 			VALUES($1,$2,$3,$4,$5);`)
@@ -201,7 +200,7 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	db := connectDatabase()
 	defer db.Close()
 
-	bodyText += ":*" //for testing
+	bodyText += ":*" 
 	stmt, err := db.Prepare(`
 		SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner 
 		FROM _note 
@@ -405,7 +404,6 @@ func getPartOfNotesSQL(username string) (notes []Note) {
 	//scan each row of the query and add it to the notes slice
 	for rows.Next() {
 		rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
-		log.Println("Notes part of:" + note.NoteTitle) //for testing
 		notes = append(notes, note)
 	}
 	return notes
@@ -741,7 +739,6 @@ func addPermissionSQL(noteid string, user string, read string, write string) boo
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	log.Println("Entered add permissions sql") //for testing
 	//Prepare statment
 	stmt, err := db.Prepare(`
 		INSERT INTO _note_privileges(note_id,user_name, read, write) 
@@ -1065,7 +1062,6 @@ func getAvaliableGroupUsers(groupid string, username string) (users []string) {
 		}
 		//Make sure note owner is note part of users
 		if user != username {
-			log.Println("User not int group: " + user) // For testing
 			users = append(users, user)
 		}
 	}
