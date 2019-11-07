@@ -23,6 +23,8 @@ Home page can be reached at < docker ip address >:8080
 
 This state cannot talk to database so will cause errors when sdatabase is called
 
+---
+
 
 ### Full local deployment using docker-compose
 
