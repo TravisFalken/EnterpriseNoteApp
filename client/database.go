@@ -93,7 +93,6 @@ func addUserSQL(newUser User) bool {
 	//Validate that username does not already exist
 	if !userNameExists(newUser.UserName) {
 		//Prepare insert to stop SQL injections
-		log.Println("Entered add user if statement")
 		stmt, err := db.Prepare(`
 			INSERT INTO _user(user_name, password, email, given_name, family_name)
 			VALUES($1,$2,$3,$4,$5);`)
@@ -405,7 +404,6 @@ func getPartOfNotesSQL(username string) (notes []Note) {
 	//scan each row of the query and add it to the notes slice
 	for rows.Next() {
 		rows.Scan(&note.NoteID, &note.NoteTitle, &note.NoteBody, &note.CreatedDate, &note.NoteOwner)
-		log.Println("Notes part of:" + note.NoteTitle) //for testing
 		notes = append(notes, note)
 	}
 	return notes
@@ -741,7 +739,6 @@ func addPermissionSQL(noteid string, user string, read string, write string) boo
 	//Connect to database
 	db := connectDatabase()
 	defer db.Close()
-	log.Println("Entered add permissions sql") //for testing
 	//Prepare statment
 	stmt, err := db.Prepare(`
 		INSERT INTO _note_privileges(note_id,user_name, read, write) 
@@ -768,7 +765,10 @@ func createNewGroup(groupName string, groupOwner string, read string, write stri
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("INSERT INTO _group(group_title, read, write, group_owner) VALUES($1,$2,$3,$4) RETURNING group_id;")
+	stmt, err := db.Prepare(`
+		INSERT INTO _group(group_title, read, write, group_owner) 
+		VALUES($1,$2,$3,$4) 
+		RETURNING group_id;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -786,7 +786,10 @@ func getGroup(groupid string) (group Group) {
 	defer db.Close()
 
 	//Prepare statement
-	stmt, err := db.Prepare("SELECT group_id, group_title, read, write FROM _group WHERE group_id = $1;")
+	stmt, err := db.Prepare(`
+		SELECT group_id, group_title, read, write 
+		FROM _group 
+		WHERE group_id = $1;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -810,7 +813,10 @@ func getAllGroups(username string) (groups []Group) {
 	defer db.Close()
 	var group Group
 	//Prepare statement
-	stmt, err := db.Prepare("SELECT group_id, group_title, read, write FROM _group WHERE group_owner = $1;")
+	stmt, err := db.Prepare(`
+		SELECT group_id, group_title, read, write 
+		FROM _group 
+		WHERE group_owner = $1;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -834,7 +840,9 @@ func saveGroupUserSQL(groupID string, username string) bool {
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("INSERT INTO _group_user(group_id, user_name) VALUES($1,$2);")
+	stmt, err := db.Prepare(`
+		INSERT INTO _group_user(group_id, user_name) 
+		VALUES($1,$2);`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -856,7 +864,10 @@ func validateGroupOwner(username string, groupid string) bool {
 	var groupUsername string
 
 	//Prepare statement
-	stmt, err := db.Prepare("SELECT group_owner FROM _group WHERE group_id = $1;")
+	stmt, err := db.Prepare(`
+		SELECT group_owner 
+		FROM _group 
+		WHERE group_id = $1;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -886,7 +897,10 @@ func getGroupUsers(groupid string) (users []string) {
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("SELECT user_name FROM _group_user WHERE group_id = $1;")
+	stmt, err := db.Prepare(`
+		SELECT user_name 
+		FROM _group_user 
+		WHERE group_id = $1;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -910,7 +924,10 @@ func getGroupPrivileges(groupid string) (read string, write string) {
 	db := connectDatabase()
 	defer db.Close()
 
-	stmt, err := db.Prepare("SELECT read, write FROM _group WHERE group_id = $1;")
+	stmt, err := db.Prepare(`
+		SELECT read, write 
+		FROM _group 
+		WHERE group_id = $1;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -925,7 +942,10 @@ func editGroupPrivileges(groupid string, write string, read string) bool {
 	defer db.Close()
 
 	//Prepare statement
-	stmt, err := db.Prepare("UPDATE _group SET write = $1, read = $2 WHERE group_id = $3;")
+	stmt, err := db.Prepare(`
+		UPDATE _group 
+		SET write = $1, read = $2 
+		WHERE group_id = $3;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -958,7 +978,9 @@ func removeGroupUser(groupid string, user string) bool {
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("DELETE FROM _group_user WHERE group_id = $1 AND user_name = $2;")
+	stmt, err := db.Prepare(`
+		DELETE FROM _group_user 
+		WHERE group_id = $1 AND user_name = $2;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -989,7 +1011,9 @@ func removeGroup(groupid string) bool {
 	db := connectDatabase()
 
 	//Prepare statement
-	stmt, err := db.Prepare("DELETE FROM _group WHERE group_id = $1;")
+	stmt, err := db.Prepare(`
+		DELETE FROM _group 
+		WHERE group_id = $1;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -1018,7 +1042,10 @@ func editGroup(groupid string, write string) bool {
 	defer db.Close()
 
 	//Prepare statment
-	stmt, err := db.Prepare("UPDATE _group SET write = $1 WHERE group_id = $2;")
+	stmt, err := db.Prepare(`
+		UPDATE _group 
+		SET write = $1 
+		WHERE group_id = $2;`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -1048,7 +1075,14 @@ func getAvaliableGroupUsers(groupid string, username string) (users []string) {
 	defer db.Close()
 	var user string
 	//prepare statement
-	stmt, err := db.Prepare("SELECT _user.user_name FROM _user WHERE  _user.user_name NOT IN (SELECT user_name FROM _group_user WHERE _group_user.group_id = $1)")
+	stmt, err := db.Prepare(`
+		SELECT _user.user_name 
+		FROM _user 
+		WHERE  _user.user_name 
+		NOT IN (
+			SELECT user_name 
+			FROM _group_user 
+			WHERE _group_user.group_id = $1)`)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -1065,7 +1099,6 @@ func getAvaliableGroupUsers(groupid string, username string) (users []string) {
 		}
 		//Make sure note owner is note part of users
 		if user != username {
-			log.Println("User not int group: " + user) // For testing
 			users = append(users, user)
 		}
 	}
@@ -1080,7 +1113,10 @@ func addSessionToUser(user User, sessionID string) bool {
 	db := connectDatabase()
 	defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE _user SET session_id=$1 WHERE user_name=$2;")
+	stmt, err := db.Prepare(`
+		UPDATE _user 
+		SET session_id=$1 
+		WHERE user_name=$2;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -1114,7 +1150,9 @@ func getUser(sessionid string) (user User) {
 	defer db.Close()
 
 	//Prepare query for getting user with the session id
-	stmt, err := db.Prepare("SELECT user_name,given_name,family_name, email, password, session_id  FROM _user WHERE session_id = $1;")
+	stmt, err := db.Prepare(`
+		SELECT user_name,given_name,family_name, email, password, session_id  
+		FROM _user WHERE session_id = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -29,7 +29,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 	if userStillLoggedIn(r) {
 		sessionid := getSession(r)
 		user := getUser(sessionid)
-		log.Println(user)
 		err := tpl.ExecuteTemplate(w, "home.gohtml", user)
 		if err != nil {
 			log.Fatal(err)
@@ -65,7 +64,6 @@ func createNote(w http.ResponseWriter, r *http.Request) {
 			Groups: groups,
 		}
 
-		log.Println("Users for create note: " + groupsAndUsers.Users[1]) //For testing
 		tpl.ExecuteTemplate(w, "createNote.gohtml", groupsAndUsers)
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -87,7 +85,6 @@ func editNote(w http.ResponseWriter, r *http.Request) {
 				note = getOwnedNote(r)
 			}
 			//get the note
-			log.Println("Edit Note: " + note.NoteTitle + note.Write + "Note Owner: " + note.NoteOwner) // For testing
 			tpl.ExecuteTemplate(w, "editNote.gohtml", note)
 		} else {
 			http.Redirect(w, r, "/listNotes", http.StatusSeeOther)
@@ -177,7 +174,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 					//Set a cookie to username
 					http.SetCookie(w, usernameCookie)
 					//Send the home page to user
-					log.Println("successfully logged in") // for testing
 					http.Redirect(w, r, "/", http.StatusSeeOther)
 				} else {
 					http.Error(w, "username and/or password does not match", http.StatusForbidden)
@@ -199,8 +195,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 //====================ADD USER=====================================
 func addUser(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("Entered addUser()") // For testing
 
 	var newUser User
 
@@ -244,13 +238,11 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		newNote.NoteTitle = r.FormValue("title")
 		newNote.NoteBody = r.FormValue("body")
 		newNote.CreatedDate = noteTime.Format("2006-01-02")
-		log.Println(newNote.CreatedDate) // For testing
 		newNote.NoteOwner = username
 		//Validate that user has typed in required inputs
 		if validateInput(newNote.NoteTitle) && validateInput(newNote.NoteBody) {
 			//Add note to database and get noteid back
 			noteid := addNoteSQL(newNote)
-			log.Println("The note id for new note: " + noteid) //for testing
 			//Get users attached to note and add them to the database
 			var read string
 			var write string
@@ -263,7 +255,6 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 					includedCheckbox := r.FormValue("includedCheckbox_" + user)
 					//Check that the user has been included
 					if includedCheckbox != "" {
-						log.Println("User: " + user) //for testing
 						read = "t"
 						writeCheckbox := r.FormValue("writeCheckbox_" + user)
 						//Check that the user has write privlages
@@ -275,20 +266,17 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 
 						//Add permission to the database
 						addPermissionSQL(noteid, user, read, write)
-						log.Println("Read:" + read) //For testing
 					}
 
 				}
 			} else {
 				groupid := r.FormValue("group")
-				log.Println("Group id: " + groupid) // for testing
 				//Validate that user is group owner
 				if validateGroupOwner(username, groupid) {
 					//Gett all of users from group
 					users := getGroupUsers(groupid)
 					//get write and read premissions from the group
 					read, write = getGroupPrivileges(groupid)
-					log.Println("read + write: " + read + " " + write) //for testing
 					for _, user := range users {
 						addPermissionSQL(noteid, user, read, write)
 					}
@@ -344,7 +332,6 @@ func allNotes(w http.ResponseWriter, r *http.Request) {
 		var notes Notes
 		notes.OwnedNotes = getOwnedNotesSQL(username)
 		notes.PartOfNotes = getPartOfNotesSQL(username)
-		log.Println(notes) //For testing
 		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
 
 	} else {
@@ -360,12 +347,10 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 
 		bodyText := mux.Vars(r)["search"]
 		username := getUserName(r)
-		log.Println("Partial String:" + bodyText) //For testing
 		//gets notes owned that match the pattern
 		notes.OwnedNotes = partialSeachOwnedTitleSQL(bodyText, username)
 		//get notes part of that match the pattern
 		notes.PartOfNotes = partialSearchPartOfTitleSQL(bodyText, username)
-		fmt.Println(notes)
 		tpl.ExecuteTemplate(w, "listNotes.gohtml", notes)
 		//User is not logged in
 	} else {
@@ -380,10 +365,8 @@ func searchNotePartial(w http.ResponseWriter, r *http.Request) {
 func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 
 	//get the id of the note the user wants to delete
-	//ASK floyd if we ca cut out deleteSpecificNote method and go straight to deleteSpecificNoteSQL
 	noteid := getID(r)
 	username := getUserName(r)
-	log.Println("NoteID + Username : " + noteid + username) //for testing
 
 	return deleteSpecificNoteSQL(noteid, username)
 }
@@ -391,7 +374,6 @@ func deleteSpecificNote(r *http.Request) (noteDeleted bool) {
 //===================Update a Note=======================
 
 func updateNote(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Entered update note") // for testing
 	if userStillLoggedIn(r) {
 		//validate if note owner
 		if noteOwner(r) {
@@ -512,7 +494,6 @@ func updateOwnedNote(r *http.Request) (success bool) {
 	//validate that there is text in title
 	if validateInput(title) {
 
-		fmt.Println("This is the title and body of update: " + title + " " + body) //for testing
 		if updateOwnedNoteSQL(title, body, noteid, username) {
 			return true
 		}
@@ -539,7 +520,6 @@ func updatePartOfNote(r *http.Request) bool {
 
 		//Get value from form
 		body := r.FormValue("body")
-		fmt.Println("This is the update body: " + body) //This is for testing
 
 		if updatePartOfNoteSQL(noteID, body) {
 			return true
@@ -551,25 +531,19 @@ func updatePartOfNote(r *http.Request) bool {
 //Need to move to database.go but just putting it here for use sake
 //Add more users to a note
 func addPermissions(w http.ResponseWriter, r *http.Request) {
-	log.Println("Entered add premission") //For testing
 	if userStillLoggedIn(r) {
 
 		noteid := getID(r)
 
 		var read string
 		var write string
-		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
 
 		users := r.Form["user"]
 		for _, user := range users {
 			//get included checkbox value
-			log.Println("User:" + user) //For testing
 			includedCheckbox := r.FormValue("includedCheckbox_" + user)
-			log.Println("Included Checkbox: " + includedCheckbox) // for testing
 			//Check that the user has been included
 			if includedCheckbox != "" {
-				log.Println("User: " + user)
 				read = "t"
 				writeCheckbox := r.FormValue("writeCheckbox_" + user)
 				//Check that the user has write privlages
@@ -583,7 +557,6 @@ func addPermissions(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, "Database Error", http.StatusInternalServerError)
 				}
 
-				log.Println("Read:" + read) //For testing
 			}
 
 		}
@@ -600,11 +573,8 @@ func editPrivileges(w http.ResponseWriter, r *http.Request) {
 		var included string
 		var writeValue string
 		var write string
-		//DO NOT REMOVE PRINTLN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		log.Println("value: " + r.FormValue("includedCheckbox_Vaughn1")) //For tessting
 		noteid := getID(r)
 		users := r.Form["user"]
-		log.Println(users[0])
 		for _, user := range users {
 			included = r.FormValue("includedCheckbox_" + user)
 			//If user not included anymore note privilege will be moved
@@ -701,7 +671,6 @@ func addGroup(w http.ResponseWriter, r *http.Request) {
 					saveGroupUserSQL(groupid, user)
 				}
 			}
-			log.Println("Group ID: " + groupid) //For testing
 		} else {
 			alert = `<script>
 					alert("Please enter a title");
@@ -913,7 +882,6 @@ func addGroupUsers(w http.ResponseWriter, r *http.Request) {
 			_ = r.FormValue("includedCheckbox_test")
 			users := r.Form["user"]
 			for _, user := range users {
-				log.Println("user: " + user) // For testing
 				includedCheckBox := r.FormValue("includedCheckbox_" + user)
 				//Validate that add user has been included
 				if includedCheckBox != "" {
@@ -978,8 +946,6 @@ func analyseNote(w http.ResponseWriter, r *http.Request) {
 		note = getNoteToAnalyse(r)
 		//get pattern from form
 		pattern := r.FormValue("pattern")
-		log.Println("Note Body: " + note.NoteBody) // for testing
-		log.Println("Pattern: " + pattern)         // for testing
 		//See how many times pattern is in the note body
 		count := strconv.Itoa(strings.Count(note.NoteBody, pattern))
 
