@@ -145,14 +145,20 @@ CREATE INDEX index_note_id
 CREATE INDEX index_note_owner
     ON _note(note_owner); -- search note by owner
 
+-- ----------------------------------------------------------
+
 CREATE INDEX index_user_username
     ON _user(user_name); -- search user by username
+
+-- ----------------------------------------------------------
 
 CREATE INDEX index_note_priviliges_username
     ON _note_privileges(user_name); -- search note priviliges by username
 
 CREATE INDEX index_note_priviliges_noteid
     ON _note_privileges(note_id); -- search note priviliges by username
+
+-- ----------------------------------------------------------
 
 CREATE INDEX index_group_name
     ON _group(group_title); -- search goup by titles
