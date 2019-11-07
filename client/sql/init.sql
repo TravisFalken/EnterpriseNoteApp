@@ -70,18 +70,18 @@ ALTER TABLE _note_privileges ADD
 
 ALTER TABLE _group ADD  
     CONSTRAINT group_owner FOREIGN KEY (group_owner)
-        REFERENCES _user (user_name);
+        REFERENCES _user (user_name) ON DELETE CASCADE;
 
 
 -- ------------------------------------------------
 
 ALTER TABLE _group_user ADD  
     CONSTRAINT user_name FOREIGN KEY (user_name)
-        REFERENCES _user (user_name);
+        REFERENCES _user (user_name) ON DELETE CASCADE;
 
 ALTER TABLE _group_user ADD  
     CONSTRAINT group_id FOREIGN KEY (group_id)
-        REFERENCES _group (group_id);
+        REFERENCES _group (group_id) ON DELETE CASCADE;
 
 
 -- ------------------------------------------------
@@ -124,6 +124,13 @@ VALUES
 INSERT INTO _note_privileges(note_id, user_name, read, write)
 VALUES
 (1, 'Trav3', 't', 't');
+
+INSERT INTO _group(group_title, read, write, group_owner) 
+VALUES
+('First Group','t','t', 'Trav3'),
+('Office Group','t','f', 'Trav3'),
+('Workshop Group','t','t', 'Trav3'),
+('First Group','t','t', 'Trav3');
 
 -- for word match search 
 
