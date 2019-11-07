@@ -151,37 +151,42 @@ func login(w http.ResponseWriter, r *http.Request) {
 		var loginUser User
 		loginUser.UserName = r.FormValue("username")
 		loginUser.Password = r.FormValue("password")
-		if userNameExists(loginUser.UserName) {
+		//Validate that user has typed in input
+		if validateInput(loginUser.UserName) && validateInput(loginUser.Password) {
+			//make sure username doesn't exist
+			if userNameExists(loginUser.UserName) {
+				if validatePass(loginUser.Password, loginUser.UserName) {
 
-			if validatePass(loginUser.Password, loginUser.UserName) {
-
-				//create new session id
-				sessionid := newSessionid()
-				//Add session id to the user in the database
-				addSessionToUser(loginUser, sessionid)
-				//set the clients session cookie
-				sessionCookie := &http.Cookie{
-					Name:  "session",
-					Value: sessionid,
+					//create new session id
+					sessionid := newSessionid()
+					//Add session id to the user in the database
+					addSessionToUser(loginUser, sessionid)
+					//set the clients session cookie
+					sessionCookie := &http.Cookie{
+						Name:  "session",
+						Value: sessionid,
+					}
+					http.SetCookie(w, sessionCookie)
+					//Create username cookie
+					usernameCookie := &http.Cookie{
+						Name:  "username",
+						Value: loginUser.UserName,
+					}
+					//Set a cookie to username
+					http.SetCookie(w, usernameCookie)
+					//Send the home page to user
+					log.Println("successfully logged in") // for testing
+					http.Redirect(w, r, "/", http.StatusSeeOther)
+				} else {
+					http.Error(w, "username and/or password does not match", http.StatusForbidden)
+					return
 				}
-				http.SetCookie(w, sessionCookie)
-				//Create username cookie
-				usernameCookie := &http.Cookie{
-					Name:  "username",
-					Value: loginUser.UserName,
-				}
-				//Set a cookie to username
-				http.SetCookie(w, usernameCookie)
-				//Send the home page to user
-				log.Println("successfully logged in") // for testing
-				http.Redirect(w, r, "/", http.StatusSeeOther)
 			} else {
 				http.Error(w, "username and/or password does not match", http.StatusForbidden)
 				return
 			}
 		} else {
-			http.Error(w, "username and/or password does not match", http.StatusForbidden)
-			return
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
 	}
 	err := tpl.ExecuteTemplate(w, "login.gohtml", nil)
@@ -232,17 +237,21 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	newUser.FamilyName = r.FormValue("family_name")
 	newUser.Email = r.FormValue("email")
 	newUser.Password = r.FormValue("password")
-
-	//Validate that username does not already exist
-	if !userNameExists(newUser.UserName) {
-		//Add user to database
-		if addUserSQL(newUser) {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+	//Validate that the user has filled in the required fields
+	if validateInput(newUser.UserName) && validateInput(newUser.Email) && validateInput(newUser.Password) {
+		//Validate that username does not already exist
+		if !userNameExists(newUser.UserName) {
+			//Add user to database
+			if addUserSQL(newUser) {
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+			} else {
+				fmt.Fprintf(w, "Failed to create new user!")
+			}
 		} else {
-			fmt.Fprintf(w, "Failed to create new user!")
+			fmt.Fprintf(w, "Username already exists!")
 		}
 	} else {
-		fmt.Fprintf(w, "Username already exists!")
+		http.Redirect(w, r, "/signUp", http.StatusSeeOther)
 	}
 
 }
@@ -265,57 +274,61 @@ func addNote(w http.ResponseWriter, r *http.Request) {
 		newNote.CreatedDate = noteTime.Format("2006-01-02")
 		log.Println(newNote.CreatedDate) // For testing
 		newNote.NoteOwner = username
+		//Validate that user has typed in required inputs
+		if validateInput(newNote.NoteTitle) && validateInput(newNote.NoteBody) {
+			//Add note to database and get noteid back
+			noteid := addNoteSQL(newNote)
+			log.Println("The note id for new note: " + noteid) //for testing
+			//Get users attached to note and add them to the database
+			var read string
+			var write string
+			//validate if user wants to user groups or manually enter users
+			useGroup := r.FormValue("useSavedGroup")
+			if useGroup == "" {
+				users := r.Form["user"]
+				for _, user := range users {
+					//get included checkbox value
+					includedCheckbox := r.FormValue("includedCheckbox_" + user)
+					//Check that the user has been included
+					if includedCheckbox != "" {
+						log.Println("User: " + user) //for testing
+						read = "t"
+						writeCheckbox := r.FormValue("writeCheckbox_" + user)
+						//Check that the user has write privlages
+						if writeCheckbox != "" {
+							write = "t"
+						} else {
+							write = "f"
+						}
 
-		//Add note to database and get noteid back
-		noteid := addNoteSQL(newNote)
-		log.Println("The note id for new note: " + noteid) //for testing
-		//Get users attached to note and add them to the database
-		var read string
-		var write string
-		//validate if user wants to user groups or manually enter users
-		useGroup := r.FormValue("useSavedGroup")
-		if useGroup == "" {
-			users := r.Form["user"]
-			for _, user := range users {
-				//get included checkbox value
-				includedCheckbox := r.FormValue("includedCheckbox_" + user)
-				//Check that the user has been included
-				if includedCheckbox != "" {
-					log.Println("User: " + user) //for testing
-					read = "t"
-					writeCheckbox := r.FormValue("writeCheckbox_" + user)
-					//Check that the user has write privlages
-					if writeCheckbox != "" {
-						write = "t"
-					} else {
-						write = "f"
+						//Add permission to the database
+						addPermissionSQL(noteid, user, read, write)
+						log.Println("Read:" + read) //For testing
 					}
 
-					//Add permission to the database
-					addPermissionSQL(noteid, user, read, write)
-					log.Println("Read:" + read) //For testing
-				}
-
-			}
-		} else {
-			groupid := r.FormValue("group")
-			log.Println("Group id: " + groupid) // for testing
-			//Validate that user is group owner
-			if validateGroupOwner(username, groupid) {
-				//Gett all of users from group
-				users := getGroupUsers(groupid)
-				//get write and read premissions from the group
-				read, write = getGroupPrivileges(groupid)
-				log.Println("read + write: " + read + " " + write) //for testing
-				for _, user := range users {
-					addPermissionSQL(noteid, user, read, write)
 				}
 			} else {
-				http.Redirect(w, r, "/", http.StatusSeeOther)
+				groupid := r.FormValue("group")
+				log.Println("Group id: " + groupid) // for testing
+				//Validate that user is group owner
+				if validateGroupOwner(username, groupid) {
+					//Gett all of users from group
+					users := getGroupUsers(groupid)
+					//get write and read premissions from the group
+					read, write = getGroupPrivileges(groupid)
+					log.Println("read + write: " + read + " " + write) //for testing
+					for _, user := range users {
+						addPermissionSQL(noteid, user, read, write)
+					}
+				} else {
+					http.Redirect(w, r, "/", http.StatusSeeOther)
+				}
 			}
+			fmt.Fprintf(w, "New Note Added")
+			//User is not logged in
+		} else {
+			http.Redirect(w, r, "/createNote", http.StatusSeeOther)
 		}
-		fmt.Fprintf(w, "New Note Added")
-		//User is not logged in
 	} else {
 		//fmt.Fprintf(w, "You are not logged in!")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -522,12 +535,19 @@ func updateOwnedNote(r *http.Request) (success bool) {
 	//get values from form
 	title := r.FormValue("title")
 	body := r.FormValue("body")
-	fmt.Println("This is the title and body of update: " + title + " " + body) //for testing
-	if updateOwnedNoteSQL(title, body, noteid, username) {
-		return true
-	} else {
+
+	//validate that there is text in title
+	if validateInput(title) {
+
+		fmt.Println("This is the title and body of update: " + title + " " + body) //for testing
+		if updateOwnedNoteSQL(title, body, noteid, username) {
+			return true
+		}
 		return false
+
 	}
+
+	return false
 
 }
 
@@ -667,45 +687,58 @@ func createGroup(w http.ResponseWriter, r *http.Request) {
 
 //Add a new Group to the database
 func addGroup(w http.ResponseWriter, r *http.Request) {
-	var newGroup Group
-	alert := ""
-	newGroup.GroupOwner = getUserName(r)
-	newGroup.GroupTitle = r.FormValue("title")
-	writePrivilege := r.FormValue("write_privilege")
-	//Validate that group has write privileges
-	if writePrivilege != "" {
-		newGroup.GroupWrite = "t"
-	} else {
-		newGroup.GroupWrite = "f"
-	}
+	//Make sure user is still logged in
+	if userStillLoggedIn(r) {
 
-	//Create new group
-	groupid := createNewGroup(newGroup.GroupTitle, newGroup.GroupOwner, "t", newGroup.GroupWrite)
-	//validate that group was added to database
-	if groupid == "" {
-		alert = `<script>
+		var newGroup Group
+		alert := ""
+		newGroup.GroupOwner = getUserName(r)
+		newGroup.GroupTitle = r.FormValue("title")
+
+		//Validate that user has entered a title
+		if validateInput(newGroup.GroupTitle) {
+			writePrivilege := r.FormValue("write_privilege")
+			//Validate that group has write privileges
+			if writePrivilege != "" {
+				newGroup.GroupWrite = "t"
+			} else {
+				newGroup.GroupWrite = "f"
+			}
+
+			//Create new group
+			groupid := createNewGroup(newGroup.GroupTitle, newGroup.GroupOwner, "t", newGroup.GroupWrite)
+			//validate that group was added to database
+			if groupid == "" {
+				alert = `<script>
 					alert("Group Not Successfully Created");
 					window.location.href="/";
 				</script>`
-	} else {
-		alert = `<script>
+			} else {
+				alert = `<script>
 					alert("Successfully Created Group");
 					window.location.href="/";
 				</script>`
-	}
-	users := r.Form["user"]
+			}
+			users := r.Form["user"]
 
-	for _, user := range users {
-		includedCheckBox := r.FormValue("includedCheckbox_" + user)
-		//validate that user is included in the group
-		if includedCheckBox != "" {
-			saveGroupUserSQL(groupid, user)
+			for _, user := range users {
+				includedCheckBox := r.FormValue("includedCheckbox_" + user)
+				//validate that user is included in the group
+				if includedCheckBox != "" {
+					saveGroupUserSQL(groupid, user)
+				}
+			}
+			log.Println("Group ID: " + groupid) //For testing
+		} else {
+			alert = `<script>
+					alert("Please enter a title");
+					window.location.href="/createGroup";
+				</script>`
 		}
+		w.Write([]byte(alert))
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
-	log.Println("Group ID: " + groupid) //For testing
-
-	w.Write([]byte(alert))
-
 }
 
 //Delete Group
@@ -938,4 +971,14 @@ func addGroupUsers(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
+
+}
+
+// Validate that user has entered value
+func validateInput(input string) bool {
+	if input == "" {
+		return false
+	}
+
+	return true
 }
