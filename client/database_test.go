@@ -36,6 +36,12 @@ func TestDatabase(t *testing.T) {
 	newNote2.NoteOwner = "testUserName1"
 	newNote2.CreatedDate = "2019-11-03"
 
+	var newGroup Group
+	newGroup.GroupTitle = "testGroup"
+	newGroup.GroupOwner = newUser1.UserName
+	newGroup.GroupRead = "t"
+	newGroup.GroupWrite = "t"
+
 	db := connectDatabase()
 	defer db.Close()
 
@@ -125,7 +131,18 @@ func TestDatabase(t *testing.T) {
 		// Test update part of note
 		assert.True(updatePartOfNoteSQL(note1ID, "Test Update"), "Should be able to update")
 
-		// all users, notes and permissions tests end here ------------------------------------------------------------
+		// Test Create Group
+		groupID := createNewGroup(newGroup.GroupTitle, newGroup.GroupOwner, newGroup.GroupRead, newGroup.GroupWrite)
+		assert.NotEmpty(groupID, "should hold created group id")
+		// Group tests start here --------------------------------------------------------------------------------------------
+
+		//
+
+		// all users, groups, notes and permissions tests end here ------------------------------------------------------------
+
+		// Test remove group
+		assert.True(removeGroup(groupID), "Should remove group")
+
 		// Test remove permissions
 		assert.True(removePrivilege(note1ID, newUser2.UserName), "permissions should be removed on note 1")
 		assert.True(removePrivilege(note2ID, newUser2.UserName), "permissions should be removed on note 2")
