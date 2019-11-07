@@ -23,7 +23,8 @@
 
 ### Deploying on different operating systems
 
-* We are utilizing Docker to host our application. This allows for containers to be made that hold all necessary software for running the application. Utilizing this technology allows for hosting on any operating system
+* We are utilizing Docker to host our application. This allows for containers to be made that hold all necessary software for running the application. Utilizing this technology allows for hosting on any operating system.
+* We are also utilizing bootstrap which will allow for the front end to be used on different browsers
 
 ---
 
