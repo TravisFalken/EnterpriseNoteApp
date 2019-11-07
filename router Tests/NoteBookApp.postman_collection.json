@@ -1,0 +1,1153 @@
+{
+	"info": {
+		"_postman_id": "59a02d29-a566-4cfa-94ce-7015fdf3bb6e",
+		"name": "NoteBookApp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:8080/",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "70c146f7-206b-4315-9480-a5e6cc4ff2fb",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/signUp",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "17f64775-6594-4cf9-952f-f32193e1bc6d",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/signUp",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"signUp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/createUser",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8840ae67-45e6-4d26-ae16-7ef18a6ec5b3",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userName\": \"bob12\",\r\n    \"password\": \"Travis\",\r\n    \"familyName\": \"Falkenberg\",\r\n    \"givenName\": \"Travis\",\r\n    \"email\": \"test@gmail.com\"\r\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/createUser",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"createUser"
+					]
+				},
+				"description": "Adds a user to the database"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "079eed24-37d7-47e3-bd29-53e74a8d521b",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"Trav3\",\n\t\"password\": \"1234\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"login"
+					]
+				},
+				"description": "Login with user details in body"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/login post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "874ece78-7a98-4242-a7f1-fa012a8e1ef9",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "Trav3",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "1234",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/createNote",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "064cba99-0920-439b-a32f-3d79930da26b",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"noteTitle\": \"NoteBookApp To do List\",\n\t\"noteBody\": \"This is a list of things we need to do for the webapp\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/createNote",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"createNote"
+					]
+				},
+				"description": "Make a new Note"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/AddNote",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "baf7a1ca-7749-4799-8eab-f223c81527a8",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"noteTitle\": \"NoteBookApp To do List\",\n\t\"noteBody\": \"This is a list of things we need to do for the webapp\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/addNote",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addNote"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/listNotes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8bbf9436-423c-4e02-b16f-7574368140b0",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response has a valid JSON body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/listNotes",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"listNotes"
+					]
+				},
+				"description": "List all of the notes that the user owns"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/searchNotes/app",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "fc59e993-58da-4eec-8c29-317c57993c03",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/searchNotes?search=app",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"searchNotes"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "app"
+						}
+					]
+				},
+				"description": "Search for all notes with partial searching"
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/editNote/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d5f9855f-db2a-48d1-b46c-64a17d832b8a",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/editNote/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"editNote",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/addUsers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c5e060d1-b483-4054-b6ea-b0634a8e205c",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/addUsers/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addUsers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/listPrivileges/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "537c4baf-ba3a-4068-aa4a-77b10739993e",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/listPrivileges/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"listPrivileges",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/updateNote/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "fbb3a2cf-649b-4d9e-955f-1363b10f19c6",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/updateNote/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"updateNote",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/editPrivileges/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b4628fdf-d50a-4307-97c5-d8021ca0886e",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/editPrivileges/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"editPrivileges",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/addPrivileges/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "738f5171-2482-48c5-b05e-934af51d4d3c",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/addPrivileges/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addPrivileges",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/analyseNote/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2d77d261-8e3a-4ee4-bd38-6fe850c2566d",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/analyseNote/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"analyseNote",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/analyseNote/1 post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "221c0756-90d3-4601-91e6-734af3318f44",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/analyseNote/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"analyseNote",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/deleteNote/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "37ee20e6-d1fa-49a6-a1e1-096619d89bfd",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/deleteNote/0",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deleteNote",
+						"0"
+					]
+				},
+				"description": "Delete a note based on the note id "
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/createGroup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0ffc6996-6bbc-455f-b8fc-aea6a04bded3",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/createGroup",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"createGroup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/addGroup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4f24b018-7aac-441e-acbd-fcce5e454908",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/addGroup",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addGroup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/viewGroups",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e33b897a-dfc8-4019-94a2-9dbfc1c928ed",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/viewGroups",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"viewGroups"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/viewEditGroupUsers/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "276c1380-9751-4e47-abb8-148d9e9d6932",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/viewEditGroupUsers/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"viewEditGroupUsers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/editGroupUsers/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e6c6f54f-924c-45d4-ab77-0942f087ada0",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/editGroupUsers/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"editGroupUsers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/updateGroup/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b2c2e79a-d07a-4534-93e2-6767d0faf02f",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/updateGroup/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"updateGroup",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/viewGroup/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c0dc66a3-3b7c-46d2-8566-8f0c0fc0818c",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/viewGroup/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"viewGroup",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/AddUsersGroup/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ff21e28c-6e87-4dff-976f-516614565000",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/AddUsersGroup/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"AddUsersGroup",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/AddUsersGroup/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ca9cc609-7ec2-451e-8e16-36daa4d61f6d",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/AddUsersGroup/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"AddUsersGroup",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/deleteGroup/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c62c8e9e-f841-4df7-a526-18d809b30998",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/deleteGroup/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deleteGroup",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0180cd71-3e08-43a7-9e1d-dbfde8d2aea3",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"     // assert that the status code is 200",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"     // assert that the response n body",
+							"     pm.response.to.be.withBody;",
+							"     ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/logout",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"logout"
+					]
+				},
+				"description": "Logs user out "
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
