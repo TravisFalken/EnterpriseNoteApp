@@ -8,8 +8,7 @@ import (
 )
 
 func connectDatabase() (db *sql.DB) {
-	// enterprisenoteapp_db_1
-	//connString := "postgresql://postgres:password@enterprisenoteapp_db_1:5432?sslmode=disable"
+	// Connection string needed for docker
 	// connString := "host=db port=5432 user=postgres password=password dbname=noteBookApp sslmode=disable"
 
 	//Open db connection
@@ -200,7 +199,7 @@ func partialTextBodySearchSQL(bodyText string, username string) []Note {
 	db := connectDatabase()
 	defer db.Close()
 
-	bodyText += ":*" 
+	bodyText += ":*"
 	stmt, err := db.Prepare(`
 		SELECT _note.note_id, _note.title, _note.body, _note.date_created, _note.note_owner 
 		FROM _note 

@@ -9,7 +9,7 @@ to deploy as dev through Docker CLI
         docker build -f Dockerfile.dev -t my-golang-app .
         docker run -p 8080:8080 -it --rm --name my-running-app my-golang-app  
 
-Application will not be able to talk to database in this state. this is just used for testing purposes
+Application will not be able to talk to database in this state making database.go tests fail
 
 Home page can be reached at < docker ip address >:8080
 
@@ -17,6 +17,7 @@ Home page can be reached at < docker ip address >:8080
 ### Full local deployment using docker-compose
 
 Start database first
+Make sure to change connection string in database.go to provided connString for docker connection
 
         docker-compose up -d db
         docker-compose logs -f db      
@@ -33,7 +34,7 @@ Then start web app with
 
 ## Current Issues
 
-DB conn string is not correct, trying to find error
+Currently cannot fully test docker-compose as using windows home and that operating system cannot currently make use of volumes
 
 ---
 
