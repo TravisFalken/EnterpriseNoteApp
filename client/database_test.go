@@ -136,7 +136,17 @@ func TestDatabase(t *testing.T) {
 		assert.NotEmpty(groupID, "should hold created group id")
 		// Group tests start here --------------------------------------------------------------------------------------------
 
-		//
+		// Test getGroup
+		assert.Equal(newGroup.GroupTitle, getGroup(groupID).GroupTitle, "Title should match")
+
+		// Test validate group owner
+		assert.True(validateGroupOwner(newUser1.UserName, groupID), "User1 should be owner of group")
+
+		// Test save group user
+		assert.True(saveGroupUserSQL(groupID, newUser2.UserName), "User 2 should be added to group")
+
+		// Test get all groups
+		assert.Equal(newGroup.GroupTitle, getAllGroups(newUser1.UserName)[0].GroupTitle, "Title should match")
 
 		// all users, groups, notes and permissions tests end here ------------------------------------------------------------
 
